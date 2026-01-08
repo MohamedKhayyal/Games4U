@@ -68,7 +68,7 @@ export default function HeroSlider() {
         alt={slide.title}
         fill
         priority
-        className="object-cover object-center transition-opacity duration-700"
+        className="object-cover transition-opacity duration-700"
       />
 
       <div className="absolute inset-0 bg-gradient-to-r from-[#0b1020] via-[#0b1020]/80 to-transparent" />
