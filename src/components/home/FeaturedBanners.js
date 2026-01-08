@@ -24,7 +24,7 @@ export default function FeaturedBanners() {
           "
         >
           <Image
-            src="/images/godOfWar.jpg"
+            src="/images/godOfWar.jpeg"
             alt="God of War Ragnarok"
             fill
             priority

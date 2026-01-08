@@ -17,7 +17,7 @@ const slides = [
     title: "GOD OF WAR\nRAGNARÖK",
     description:
       "Kratos and Atreus journey through the Nine Realms in search of answers as Asgardian forces prepare for war.",
-    image: "/images/godOfWar.jpg",
+    image: "/images/godOfWar.jpeg",
   },
 ];
 
@@ -59,7 +59,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="relative h-[85vh] w-screen overflow-hidden bg-[#0b1020]"
+      className="relative h-[70vh] sm:h-[80vh] lg:h-[85vh] w-screen overflow-hidden bg-[#0b1020]"
       onMouseEnter={stopAutoSlide}
       onMouseLeave={startAutoSlide}
     >
@@ -68,7 +68,7 @@ export default function HeroSlider() {
         alt={slide.title}
         fill
         priority
-        className="object-cover transition-opacity duration-700"
+        className="transition-opacity duration-700 object-contain sm:object-cover"
       />
 
       <div className="absolute inset-0 bg-gradient-to-r from-[#0b1020] via-[#0b1020]/80 to-transparent" />
@@ -78,16 +78,19 @@ export default function HeroSlider() {
           key={current}
           className="max-w-xl text-white animate-fade-slide-left"
         >
-          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight whitespace-pre-line">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight whitespace-pre-line">
             {slide.title}
           </h1>
 
-          <p className="mt-6 text-gray-300 text-sm md:text-base leading-relaxed">
+          <p className="mt-4 sm:mt-6 text-gray-300 text-sm md:text-base leading-relaxed">
             {slide.description}
           </p>
 
-          <div className="mt-8">
-            <Link href="/shop" className="bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-200 transition">
+          <div className="mt-6 sm:mt-8">
+            <Link
+              href="/shop"
+              className="inline-block bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-200 transition"
+            >
               Buy Now
             </Link>
           </div>
@@ -96,14 +99,16 @@ export default function HeroSlider() {
 
       <button
         onClick={prev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
+        className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
+        aria-label="Previous slide"
       >
         ‹
       </button>
 
       <button
         onClick={next}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
+        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
+        aria-label="Next slide"
       >
         ›
       </button>
