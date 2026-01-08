@@ -19,8 +19,7 @@ export default function FeaturedBanners() {
           className="
             reveal group
             lg:row-span-2
-            relative rounded-3xl overflow-hidden
-            aspect-[3/4]
+            relative rounded-3xl overflow-hidden         
             min-h-[520px]
           "
         >
