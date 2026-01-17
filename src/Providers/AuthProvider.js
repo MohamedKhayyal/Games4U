@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
     try {
       const res = await fetch(`${API}/api/users/me`, {
         credentials: "include",
+        cache: "no-store",
       });
 
       if (!res.ok) throw new Error();

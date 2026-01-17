@@ -2,13 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import {useAuth} from "@/Providers/AuthProvider";
+import { useAuth } from "@/Providers/AuthProvider";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Navbar() {
   const { user, loading, refetchUser } = useAuth();
-
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dropdown, setDropdown] = useState(false);
@@ -99,9 +98,10 @@ export default function Navbar() {
             user && (
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setDropdown(!dropdown)}>
-                  {user.photo ? (
+                  {user?.photo ? (
                     <img
-                      src={user.photo}
+                      src={`${API}${user.photo}`}
+                      alt="User"
                       className="w-10 h-10 rounded-full object-cover border border-sky-400"
                     />
                   ) : (
