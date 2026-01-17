@@ -13,7 +13,6 @@ export default function FeaturedBanners() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
       <div className="grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 gap-6">
-
         <div
           ref={big}
           className="
@@ -28,6 +27,7 @@ export default function FeaturedBanners() {
             alt="God of War Ragnarok"
             fill
             priority
+            sizes="(max-width:1024px) 100vw, 50vw"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
 
@@ -62,6 +62,7 @@ export default function FeaturedBanners() {
             src="/images/ea-sports-fc-26.jpg"
             alt="EA Sports FC 26"
             fill
+            sizes="(max-width:1024px) 100vw, 33vw"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
 
@@ -88,6 +89,7 @@ export default function FeaturedBanners() {
             src="/images/ghost-of-ytei.png"
             alt="Ghost of Yotei"
             fill
+            sizes="(max-width:1024px) 100vw, 33vw"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
 
@@ -114,6 +116,7 @@ export default function FeaturedBanners() {
             src="/images/battlefield-6.png"
             alt="Battlefield 6"
             fill
+            sizes="(max-width:1024px) 100vw, 33vw"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
 
@@ -127,7 +130,6 @@ export default function FeaturedBanners() {
             Shop Now →
           </Link>
         </div>
-
       </div>
     </section>
   );
