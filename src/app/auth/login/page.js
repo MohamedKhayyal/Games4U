@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {useAuth} from "@/Providers/AuthProvider";
+import { useAuth } from "@/Providers/AuthProvider";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { refetchUser } = useAuth();
+  const { user, loading, refetchUser } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -17,8 +17,16 @@ export default function LoginPage() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/");
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) return null;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,25 +35,25 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const res = await fetch(`${API}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ⭐ cookie
+        credentials: "include",
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      await refetchUser(); // ⭐ يحدث navbar فورًا
+      await refetchUser(); // يحدث الـ Navbar
       router.replace("/");
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -88,10 +96,10 @@ export default function LoginPage() {
           {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
           <button
-            disabled={loading}
+            disabled={submitting}
             className="border border-sky-400 hover:bg-sky-400 hover:text-black transition py-3 w-full rounded-md font-medium mb-6"
           >
-            {loading ? "Logging in..." : "Log in"}
+            {submitting ? "Logging in..." : "Log in"}
           </button>
         </form>
 

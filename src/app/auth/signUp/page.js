@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {useAuth} from "@/Providers/AuthProvider";
+import { useAuth } from "@/Providers/AuthProvider";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SignupPage() {
   const router = useRouter();
-  const { refetchUser } = useAuth();
+  const { user, loading, refetchUser } = useAuth();
 
   const [form, setForm] = useState({
     name: "",
@@ -18,8 +18,17 @@ export default function SignupPage() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // ✅ Client Guard
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/");
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) return null;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,25 +37,25 @@ export default function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const res = await fetch(`${API}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ⭐ cookie
+        credentials: "include",
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Signup failed");
 
-      await refetchUser(); // ⭐ يحدث navbar فورًا
-      router.push("/");
+      await refetchUser();
+      router.replace("/");
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -98,10 +107,10 @@ export default function SignupPage() {
           {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
           <button
-            disabled={loading}
+            disabled={submitting}
             className="border border-sky-400 hover:bg-sky-400 hover:text-black transition py-3 w-full rounded-md font-medium mb-6"
           >
-            {loading ? "Creating account..." : "Sign up"}
+            {submitting ? "Creating account..." : "Sign up"}
           </button>
         </form>
 
