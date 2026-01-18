@@ -7,6 +7,7 @@ import { useAuth } from "@/Providers/AuthProvider";
 export default function Navbar() {
   const { user, loading, refetchUser } = useAuth();
   const [open, setOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [dropdown, setDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -38,6 +39,34 @@ export default function Navbar() {
     refetchUser();
     window.location.href = "/";
   };
+
+  /* Fetch cart count */
+  const fetchCartCount = async () => {
+    try {
+      const res = await fetch("/api/cart/me", {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        setCartCount(0);
+        return;
+      }
+
+      const data = await res.json();
+      setCartCount(data.data.length || 0);
+    } catch (err) {
+      setCartCount(0);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchCartCount();
+    } else {
+      setCartCount(0);
+    }
+  }, [user]);
+
 
   return (
     <nav
@@ -81,7 +110,7 @@ export default function Navbar() {
 
           <Link href="/cart" className="relative hover:text-white">
             <CartIcon />
-            <Badge />
+            <Badge count={cartCount} />
           </Link>
 
           {!loading && !user ? (
@@ -137,7 +166,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4 sm:hidden">
           <Link href="/cart" className="relative hover:text-sky-400">
             <CartIcon />
-            <Badge />
+            <Badge count={cartCount} />
           </Link>
 
           <button onClick={() => setOpen(!open)} aria-label="Menu">
@@ -228,13 +257,16 @@ function CartIcon() {
   );
 }
 
-function Badge() {
+function Badge({ count }) {
+  if (!count || count === 0) return null;
+
   return (
     <span className="absolute -top-2 -right-2 text-xs bg-sky-500 w-5 h-5 flex items-center justify-center rounded-full">
-      3
+      {count}
     </span>
   );
 }
+
 
 function UserIcon() {
   return (

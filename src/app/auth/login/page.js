@@ -46,7 +46,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      await refetchUser(); // update the navbar
+      await refetchUser();
       router.replace("/");
     } catch (err) {
       setError(err.message);
@@ -57,7 +57,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-[#0b1020] text-white">
-      {/* Left */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 xl:px-24">
         <h1 className="text-3xl font-bold mb-8">Welcome Back</h1>
 
@@ -109,7 +108,6 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Right */}
       <div className="hidden lg:block w-1/2 relative">
         <img
           src="/images/auth.jpg"

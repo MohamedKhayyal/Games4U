@@ -19,7 +19,6 @@ export default function SignupPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // ✅ Client Guard
   useEffect(() => {
     if (!loading && user) {
       router.replace("/");
