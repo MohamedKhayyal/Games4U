@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 
-const PROTECTED_ROUTES = ["/cart", "/orders", "/profile", "/admin"];
-const AUTH_ROUTES = ["/auth/login", "/auth/signUp"];
+const PROTECTED = ["/cart", "/orders", "/profile", "/admin"];
+const AUTH_PAGES = ["/auth/login", "/auth/signUp"];
 
 export function middleware(req) {
   const { pathname } = req.nextUrl;
 
-  // تجاهل الملفات الداخلية
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -15,26 +14,17 @@ export function middleware(req) {
     return NextResponse.next();
   }
 
-  const isProtected = PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  const isAuthRoute = AUTH_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  // ✅ اقرأ cookie مباشرة
   const token = req.cookies.get("jwt")?.value;
+  const loggedIn = Boolean(token);
 
-  const isLoggedIn = !!token;
+  const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
+  const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
 
-  // 🚫 Logged in وحاول يدخل login أو signup
-  if (isLoggedIn && isAuthRoute) {
+  if (loggedIn && isAuthPage) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // 🚫 مش Logged in وحاول يدخل صفحة محمية
-  if (!isLoggedIn && isProtected) {
+  if (!loggedIn && isProtected) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 

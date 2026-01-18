@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch(`${API}/api/users/me`, {
+      const res = await fetch("/api/users/me", {
         credentials: "include",
         cache: "no-store",
       });
@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchUser();
