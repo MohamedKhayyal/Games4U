@@ -5,8 +5,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
-
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading, refetchUser } = useAuth();
@@ -38,7 +36,7 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      const res = await fetch(`${API}/api/auth/login`, {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -48,7 +46,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      await refetchUser(); // يحدث الـ Navbar
+      await refetchUser(); // update the navbar
       router.replace("/");
     } catch (err) {
       setError(err.message);

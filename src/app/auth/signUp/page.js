@@ -5,8 +5,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
-
 export default function SignupPage() {
   const router = useRouter();
   const { user, loading, refetchUser } = useAuth();
@@ -40,7 +38,7 @@ export default function SignupPage() {
     setSubmitting(true);
 
     try {
-      const res = await fetch(`${API}/api/auth/signup`, {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

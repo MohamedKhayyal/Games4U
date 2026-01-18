@@ -4,8 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/Providers/AuthProvider";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
-
 export default function Navbar() {
   const { user, loading, refetchUser } = useAuth();
   const [open, setOpen] = useState(false);
@@ -33,7 +31,7 @@ export default function Navbar() {
 
   /* Logout */
   const logout = async () => {
-    await fetch(`${API}/api/auth/logout`, {
+    await fetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
     });
@@ -45,11 +43,10 @@ export default function Navbar() {
     <nav
       className={`sticky top-0 z-50 px-6 md:px-16 lg:px-24 xl:px-20 py-4
       transition-all duration-300
-      ${
-        scrolled
+      ${scrolled
           ? "bg-slate-900/70 backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="flex items-center justify-between">
         {/* Logo */}
@@ -98,9 +95,9 @@ export default function Navbar() {
             user && (
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setDropdown(!dropdown)}>
-                  {user?.photo ? (
+                  {user.photo ? (
                     <img
-                      src={`${API}${user.photo}`}
+                      src={user.photo}
                       alt="User"
                       className="w-10 h-10 rounded-full object-cover border border-sky-400"
                     />
