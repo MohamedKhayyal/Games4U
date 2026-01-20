@@ -1,41 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/Providers/AuthProvider";
+import { useCart } from "@/Providers/CartProvider";
+import { getImageUrl } from "@/components/lib/imageHelper";
 
 export default function CartPage() {
-  const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  /* =========================
-     Fetch cart
-  ========================= */
-  const fetchCart = async () => {
-    try {
-      const res = await fetch("/api/cart/me", {
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        setCart(null);
-        return;
-      }
-
-      const data = await res.json();
-      setCart(data.data.cart);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const { cart, loading: cartLoading, refetchCart } = useCart();
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (!authLoading && !user) {
+      router.replace("/auth/login");
+    }
+  }, [authLoading, user, router]);
 
   const removeItem = async (item) => {
     await fetch("/api/cart/items/remove", {
@@ -49,10 +30,11 @@ export default function CartPage() {
       }),
     });
 
-    fetchCart();
+    // ✅ يحدث الكارت + Navbar
+    refetchCart();
   };
 
-  if (loading) {
+  if (authLoading || cartLoading) {
     return <p className="text-center py-20">Loading cart...</p>;
   }
 
@@ -97,13 +79,11 @@ export default function CartPage() {
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded bg-slate-800 overflow-hidden">
                   <img
-                    src={item.item.photo}
+                    src={getImageUrl(item.item.photo)}
                     alt={item.item.name}
-                    width={80}
-                    height={80}
-                    loading="lazy"
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                   />
+
                 </div>
 
                 <div>

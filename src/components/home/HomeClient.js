@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import HeroSlider from "@/components/home/HeroSlider";
+import BestSellerSection from "./BestSeller";
 
 const FeaturedBanners = dynamic(
   () => import("@/components/home/FeaturedBanners"),
@@ -15,6 +16,7 @@ export default function HomeClient() {
 
       <HeroSlider />
       <FeaturedBanners />
+      <BestSellerSection/>
     </div>
   );
 }

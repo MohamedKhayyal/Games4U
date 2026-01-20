@@ -3,11 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/Providers/AuthProvider";
+import { useCart } from "@/Providers/CartProvider";
+import { ShoppingCart, User } from "lucide-react";
+import { getImageUrl } from "../lib/imageHelper";
 
 export default function Navbar() {
   const { user, loading, refetchUser } = useAuth();
+  const { count } = useCart();
   const [open, setOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [dropdown, setDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -19,7 +22,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* Close dropdown on outside click */
+  /* Close dropdown */
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -39,34 +42,6 @@ export default function Navbar() {
     refetchUser();
     window.location.href = "/";
   };
-
-  /* Fetch cart count */
-  const fetchCartCount = async () => {
-    try {
-      const res = await fetch("/api/cart/me", {
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        setCartCount(0);
-        return;
-      }
-
-      const data = await res.json();
-      setCartCount(data.data.length || 0);
-    } catch (err) {
-      setCartCount(0);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchCartCount();
-    } else {
-      setCartCount(0);
-    }
-  }, [user]);
-
 
   return (
     <nav
@@ -91,15 +66,9 @@ export default function Navbar() {
 
         {/* Desktop */}
         <div className="hidden sm:flex items-center gap-8">
-          <Link href="/" className="hover:text-sky-400">
-            Home
-          </Link>
-          <Link href="/shop" className="hover:text-sky-400">
-            Games
-          </Link>
-          <Link href="/shop" className="hover:text-sky-400">
-            Devices
-          </Link>
+          <Link href="/" className="hover:text-sky-400">Home</Link>
+          <Link href="/shop" className="hover:text-sky-400">Games</Link>
+          <Link href="/shop" className="hover:text-sky-400">Devices</Link>
 
           <div className="hidden lg:flex items-center gap-2 bg-slate-800/80 px-4 py-1.5 rounded-full">
             <input
@@ -108,11 +77,13 @@ export default function Navbar() {
             />
           </div>
 
+          {/* Cart */}
           <Link href="/cart" className="relative hover:text-white">
-            <CartIcon />
-            <Badge count={cartCount} />
+            <ShoppingCart className="w-5 h-5" />
+            <Badge count={count} />
           </Link>
 
+          {/* Auth */}
           {!loading && !user ? (
             <Link
               href="/auth/login"
@@ -126,9 +97,11 @@ export default function Navbar() {
                 <button onClick={() => setDropdown(!dropdown)}>
                   {user.photo ? (
                     <img
-                      src={user.photo}
+                      src={getImageUrl(user.photo)}
+                      width={40}
+                      height={40}
                       alt="User"
-                      className="w-10 h-10 rounded-full object-cover border border-sky-400"
+                      className="rounded-full object-cover"
                     />
                   ) : (
                     <UserIcon />
@@ -139,12 +112,14 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-3 w-44 bg-slate-900 rounded-xl shadow-lg overflow-hidden">
                     <Link
                       href="/profile"
+                      onClick={() => setDropdown(false)}
                       className="block px-4 py-3 hover:bg-slate-800"
                     >
                       Profile
                     </Link>
                     <Link
                       href="/orders"
+                      onClick={() => setDropdown(false)}
                       className="block px-4 py-3 hover:bg-slate-800"
                     >
                       Orders
@@ -164,13 +139,13 @@ export default function Navbar() {
 
         {/* Mobile */}
         <div className="flex items-center gap-4 sm:hidden">
-          <Link href="/cart" className="relative hover:text-sky-400">
-            <CartIcon />
-            <Badge count={cartCount} />
+          <Link href="/cart" className="relative">
+            <ShoppingCart className="w-5 h-5" />
+            <Badge count={count} />
           </Link>
 
           <button onClick={() => setOpen(!open)} aria-label="Menu">
-            <svg width="22" height="16" viewBox="0 0 21 15" fill="none">
+            <svg width="22" height="16" viewBox="0 0 21 15">
               <rect width="21" height="2" rx="1" fill="#e5e7eb" />
               <rect y="6" width="21" height="2" rx="1" fill="#e5e7eb" />
               <rect y="12" width="21" height="2" rx="1" fill="#e5e7eb" />
@@ -178,88 +153,12 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {open && (
-        <div className="sm:hidden mt-4 flex flex-col gap-4 bg-slate-900/90 backdrop-blur px-6 py-4 rounded-lg">
-          <Link
-            href="/"
-            onClick={() => setOpen(false)}
-            className="hover:text-sky-400"
-          >
-            Home
-          </Link>
-          <Link
-            href="/shop"
-            onClick={() => setOpen(false)}
-            className="hover:text-sky-400"
-          >
-            Games
-          </Link>
-          <Link
-            href="/shop"
-            onClick={() => setOpen(false)}
-            className="hover:text-sky-400"
-          >
-            Devices
-          </Link>
-
-          {!user ? (
-            <Link
-              href="/auth/login"
-              onClick={() => setOpen(false)}
-              className="mt-2 text-center bg-sky-500 py-2 rounded-full hover:bg-sky-400"
-            >
-              Login
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/profile"
-                onClick={() => setOpen(false)}
-                className="hover:text-sky-400"
-              >
-                Profile
-              </Link>
-              <Link
-                href="/orders"
-                onClick={() => setOpen(false)}
-                className="hover:text-sky-400"
-              >
-                Orders
-              </Link>
-              <button
-                onClick={logout}
-                className="text-left text-red-400 hover:bg-red-500/20 py-2 rounded"
-              >
-                Logout
-              </button>
-            </>
-          )}
-        </div>
-      )}
     </nav>
   );
 }
 
-/* Icons */
-
-function CartIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 14 14" fill="none">
-      <path
-        d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function Badge({ count }) {
-  if (!count || count === 0) return null;
-
+  if (!count) return null;
   return (
     <span className="absolute -top-2 -right-2 text-xs bg-sky-500 w-5 h-5 flex items-center justify-center rounded-full">
       {count}
@@ -267,20 +166,10 @@ function Badge({ count }) {
   );
 }
 
-
 function UserIcon() {
   return (
     <div className="w-10 h-10 rounded-full border border-sky-400 flex items-center justify-center">
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-      >
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
-      </svg>
+      <User className="w-5 h-5" />
     </div>
   );
 }
