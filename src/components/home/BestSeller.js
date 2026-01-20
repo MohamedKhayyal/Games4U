@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/Providers/CartProvider";
-import { getImageUrl } from "../lib/imageHelper";
+import { getImageUrl } from "../../lib/imageHelper";
 
 export default function BestSellers() {
     const [games, setGames] = useState([]);
@@ -127,4 +127,4 @@ function Variant({ label, price, onAdd, loading }) {
             </div>
         </div>
     );
-}
+} 

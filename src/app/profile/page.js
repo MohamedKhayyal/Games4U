@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/Providers/AuthProvider";
-import { getImageUrl } from "@/components/lib/imageHelper";
+import { getImageUrl } from "@/lib/imageHelper";
 
 export default function ProfilePage() {
-    const { user, refetchUser } = useAuth();
+    const router = useRouter();
+    const { user, loading: authLoading, refetchUser } = useAuth();
 
     const [form, setForm] = useState({
         name: "",
@@ -16,6 +18,12 @@ export default function ProfilePage() {
     const [preview, setPreview] = useState("");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.replace("/auth/login");
+        }
+    }, [authLoading, user, router]);
 
     useEffect(() => {
         if (user) {

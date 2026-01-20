@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
+import { useCart } from "@/Providers/CartProvider";
 
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading, refetchUser } = useAuth();
+  const { refetchCart } = useCart();
 
   const [form, setForm] = useState({
     email: "",
@@ -47,6 +49,8 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(data.message || "Login failed");
 
       await refetchUser();
+      await refetchCart();
+
       router.replace("/");
     } catch (err) {
       setError(err.message);

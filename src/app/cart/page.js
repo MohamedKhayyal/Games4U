@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 import { useCart } from "@/Providers/CartProvider";
-import { getImageUrl } from "@/components/lib/imageHelper";
+import { getImageUrl } from "@/lib/imageHelper";
 
 export default function CartPage() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function CartPage() {
     return (
       <div className="text-center py-24 text-slate-400">
         <p className="text-xl mb-4">Your cart is empty</p>
-        <Link href="/shop" className="text-sky-400 hover:underline">
+        <Link href="/shop/games" className="text-sky-400 hover:underline">
           Go shopping →
         </Link>
       </div>
@@ -79,6 +79,7 @@ export default function CartPage() {
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded bg-slate-800 overflow-hidden">
                   <img
+                    loading="lazy"
                     src={getImageUrl(item.item.photo)}
                     alt={item.item.name}
                     className="w-full h-full object-cover"
@@ -115,7 +116,7 @@ export default function CartPage() {
           ))}
 
           <Link
-            href="/shop"
+            href="/shop/games"
             className="mt-8 inline-flex items-center gap-2 text-sky-400 hover:underline"
           >
             ← Continue Shopping

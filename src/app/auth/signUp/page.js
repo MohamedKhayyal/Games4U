@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
+import { useCart } from "@/Providers/CartProvider";
 
 export default function SignupPage() {
   const router = useRouter();
   const { user, loading, refetchUser } = useAuth();
+  const { refetchCart } = useCart();
 
   const [form, setForm] = useState({
     name: "",
@@ -48,6 +50,8 @@ export default function SignupPage() {
       if (!res.ok) throw new Error(data.message || "Signup failed");
 
       await refetchUser();
+      await refetchCart();
+
       router.replace("/");
     } catch (err) {
       setError(err.message);
