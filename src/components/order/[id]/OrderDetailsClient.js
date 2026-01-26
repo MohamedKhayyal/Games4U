@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 import { getImageUrl } from "@/lib/imageHelper";
+import Image from "next/image";
 
 export default function OrderDetailsClient({ orderId }) {
   const statusStyles = {
@@ -67,9 +68,11 @@ export default function OrderDetailsClient({ orderId }) {
             className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-lg p-4"
           >
             <div className="w-20 h-20 rounded bg-slate-800 overflow-hidden">
-              <img
+              <Image
                 src={getImageUrl(item.photo)}
                 alt={item.name}
+                width={100}
+                height={100}
                 className="w-full h-full object-cover"
               />
             </div>

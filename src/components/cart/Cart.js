@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 import { useCart } from "@/Providers/CartProvider";
 import { getImageUrl } from "@/lib/imageHelper";
+import Image from "next/image";
 
 export default function CartClient() {
   const router = useRouter();
@@ -34,23 +35,27 @@ export default function CartClient() {
   };
 
   const placeOrder = async () => {
-    try {
-      const res = await fetch("/api/order", {
-        method: "POST",
-        credentials: "include",
-      });
+  try {
+    const res = await fetch("/api/order", {
+      method: "POST",
+      credentials: "include",
+    });
 
-      if (!res.ok) throw new Error("Order failed");
+    const data = await res.json();
 
-      const data = await res.json();
-
-      await refetchCart();
-
-      router.push("/orders");
-    } catch (err) {
-      alert("Failed to place order");
+    if (!res.ok) {
+      console.error("Order error:", data);
+      throw new Error(data.message || "Order failed");
     }
-  };
+
+    await refetchCart();
+
+    router.push("/orders");
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
 
   if (authLoading || cartLoading) {
     return <p className="text-center py-20">Loading cart...</p>;
@@ -91,11 +96,12 @@ export default function CartClient() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded bg-slate-800 overflow-hidden">
-                  <img
+                  <Image
                     src={getImageUrl(item.item.photo)}
                     alt={item.item.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
+                    width={100}
+                    height={100}
+                    className="object-cover w-full h-full"
                   />
                 </div>
 
@@ -153,7 +159,8 @@ export default function CartClient() {
 
           <button
             onClick={placeOrder}
-            className="w-full py-3 mt-6 bg-sky-500 hover:bg-sky-400 transition rounded-md font-medium text-black"
+            disabled={!cart || cart.items.length === 0}
+            className="w-full py-3 mt-6 bg-sky-500 hover:bg-sky-400 transition rounded-md font-medium text-black disabled:opacity-50"
           >
             Place Order
           </button>

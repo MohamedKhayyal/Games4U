@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/Providers/CartProvider";
 import { getImageUrl } from "@/lib/imageHelper";
+import Link from "next/link";
 
 export default function GamesPage() {
   const { refetchCart } = useCart();
@@ -96,19 +97,20 @@ export default function GamesPage() {
                 flex flex-col
               "
             >
-              <div className="relative w-full aspect-square mb-2 rounded-md overflow-hidden">
-                <Image
-                  src={getImageUrl(game.photo)}
-                  alt={game.name}
-                  fill
-                  sizes="(max-width: 640px) 50vw,
+              <Link href={`/games/${game.slug}`}>
+                <div className="relative w-full aspect-square mb-2 rounded-md overflow-hidden">
+                  <Image
+                    src={getImageUrl(game.photo)}
+                    alt={game.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw,
                          (max-width: 1024px) 25vw,
                          20vw"
-                  className="object-cover"
-                  priority={false}
-                />
-              </div>
-
+                    className="object-cover"
+                    priority={false}
+                  />
+                </div>
+              </Link>
               <h3 className="text-sm sm:text-base font-medium truncate mb-2">
                 {game.name}
               </h3>
