@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import CartClient from "../../components/cart/Cart";
+import CartClient from "@/components/cart/Cart";
 
 export const metadata = {
   title: "Shopping Cart | Games4U",
