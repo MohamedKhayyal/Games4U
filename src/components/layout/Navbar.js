@@ -6,6 +6,7 @@ import { useAuth } from "@/Providers/AuthProvider";
 import { useCart } from "@/Providers/CartProvider";
 import { ShoppingCart, User } from "lucide-react";
 import { getImageUrl } from "@/lib/imageHelper";
+import Image from "next/image";
 
 export default function Navbar() {
   const { user, loading, refetchUser } = useAuth();
@@ -17,14 +18,12 @@ export default function Navbar() {
 
   const dropdownRef = useRef(null);
 
-  /* Scroll effect */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* Close profile dropdown */
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -35,7 +34,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* Logout */
   const logout = async () => {
     await fetch("/api/auth/logout", {
       method: "POST",
@@ -50,9 +48,10 @@ export default function Navbar() {
       className={`
         sticky top-0 z-50 px-6 md:px-16 lg:px-24 xl:px-20 py-4
         transition-all duration-300
-        ${scrolled
-          ? "bg-slate-900/70 backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
-          : "bg-transparent"
+        ${
+          scrolled
+            ? "bg-slate-900/70 backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
+            : "bg-transparent"
         }
       `}
     >
@@ -69,13 +68,17 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Menu */}
         <div className="hidden sm:flex items-center gap-8">
-          <Link href="/" className="hover:text-sky-400">Home</Link>
-          <Link href="/shop/games" className="hover:text-sky-400">Games</Link>
-          <Link href="/shop" className="hover:text-sky-400">Devices</Link>
+          <Link href="/" className="hover:text-sky-400">
+            Home
+          </Link>
+          <Link href="/shop/games" className="hover:text-sky-400">
+            Games
+          </Link>
+          <Link href="/shop/devices" className="hover:text-sky-400">
+            Devices
+          </Link>
 
-          {/* Search (desktop only) */}
           <div className="hidden lg:flex items-center gap-2 bg-slate-800/80 px-4 py-1.5 rounded-full">
             <input
               className="bg-transparent outline-none placeholder-slate-400 w-40"
@@ -83,13 +86,11 @@ export default function Navbar() {
             />
           </div>
 
-          {/* Cart */}
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-5 h-5" />
             <Badge count={count} />
           </Link>
 
-          {/* Auth */}
           {!loading && !user ? (
             <Link
               href="/auth/login"
@@ -102,9 +103,11 @@ export default function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setDropdown(!dropdown)}>
                   {user.photo ? (
-                    <img
+                    <Image
                       src={getImageUrl(user.photo)}
                       alt="User"
+                      width={112}
+                      height={112}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
@@ -162,13 +165,25 @@ export default function Navbar() {
       {open && (
         <div className="sm:hidden mt-4 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
           <div className="flex flex-col divide-y divide-slate-800">
-            <Link href="/" onClick={() => setOpen(false)} className="px-5 py-4 hover:bg-slate-800">
+            <Link
+              href="/"
+              onClick={() => setOpen(false)}
+              className="px-5 py-4 hover:bg-slate-800"
+            >
               Home
             </Link>
-            <Link href="/shop/games" onClick={() => setOpen(false)} className="px-5 py-4 hover:bg-slate-800">
+            <Link
+              href="/shop/games"
+              onClick={() => setOpen(false)}
+              className="px-5 py-4 hover:bg-slate-800"
+            >
               Games
             </Link>
-            <Link href="/shop" onClick={() => setOpen(false)} className="px-5 py-4 hover:bg-slate-800">
+            <Link
+              href="/shop/devices"
+              onClick={() => setOpen(false)}
+              className="px-5 py-4 hover:bg-slate-800"
+            >
               Devices
             </Link>
 

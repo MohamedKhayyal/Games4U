@@ -1,6 +1,7 @@
-// lib/getImageUrl.js
-export const getImageUrl = (path) => {
-    if (!path) return "/images/placeholder.png";
-    if (path.startsWith("http")) return path;
-    return `${process.env.NEXT_PUBLIC_API_URL}${path}`;
-};
+export function getImageUrl(photo) {
+    if (!photo) return "/images/user.png";
+
+    if (photo.startsWith("http")) return photo;
+
+    return photo;
+}
