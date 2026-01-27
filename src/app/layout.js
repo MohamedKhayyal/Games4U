@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import SmoothScroll from "@/Providers/SmoothScroll";
 import { AuthProvider } from "@/Providers/AuthProvider";
 import { CartProvider } from "@/Providers/CartProvider";
+import Footer from "@/components/layout/Footer";
 
 export const metadata = {
   title: "Games4U",
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
             <SmoothScroll>
               <Navbar />
               {children}
+              <Footer />
             </SmoothScroll>
           </CartProvider>
         </AuthProvider>

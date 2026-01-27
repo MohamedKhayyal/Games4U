@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/Providers/AuthProvider";
 import { getImageUrl } from "@/lib/imageHelper";
 
@@ -60,13 +59,11 @@ export default function OrdersClient() {
             key={order._id}
             className="bg-slate-900 border border-slate-800 rounded-xl p-5"
           >
-            {/* Header */}
             <div className="flex justify-between items-center mb-4 text-sm text-slate-400">
               <span>Order #{order._id.slice(-6)}</span>
               <StatusBadge status={order.status} />
             </div>
 
-            {/* Items */}
             <div className="space-y-4">
               {order.items.map((item, idx) => (
                 <div
@@ -98,18 +95,10 @@ export default function OrdersClient() {
               ))}
             </div>
 
-            {/* Footer */}
             <div className="flex justify-between items-center mt-4">
               <p className="text-lg font-semibold">
                 Total: {order.totalPrice} EGP
               </p>
-
-              <Link
-                href={`/orders/${order._id}`}
-                className="text-sky-400 hover:underline text-sm"
-              >
-                View Details →
-              </Link>
             </div>
           </div>
         ))}

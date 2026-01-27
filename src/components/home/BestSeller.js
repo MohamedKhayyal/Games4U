@@ -107,7 +107,7 @@ export default function BestSellers() {
                 transition
               "
             >
-              <Link href={`/games/${game.slug}`}>
+              <Link href={`/shop/games/${game.slug}`}>
                 <div className="relative h-44 sm:h-48">
                   <Image
                     src={getImageUrl(game.photo)}
