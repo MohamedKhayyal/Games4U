@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 async function GamesData() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/games`, {
+  const res = await fetch(`https://games4userver-production.up.railway.app/api/games`, {
     cache: "no-store",
   });
   const data = await res.json();
