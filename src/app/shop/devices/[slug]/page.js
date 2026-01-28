@@ -1,6 +1,6 @@
 import DeviceDetailsClient from "@/components/devices/DeviceDetailsClient";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.API_URL;
 
 async function getDevice(slug) {
   const res = await fetch(`${API}/api/devices/${slug}`, {

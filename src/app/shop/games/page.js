@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 async function GamesData() {
-  const res = await fetch(`https://games4userver-production.up.railway.app/api/games`, {
+  const res = await fetch(`${process.env.API_URL }/api/games`, {
     cache: "no-store",
   });
   const data = await res.json();
@@ -17,17 +17,14 @@ async function GamesData() {
 
 export default async function GamesPage() {
   const games = await GamesData();
-  if (!games.length) {
-    return <GamesSkeleton />;
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 text-white">
       <h1 className="text-3xl font-bold mb-8">Games Store</h1>
 
-      {/* <Suspense fallback={<GamesSkeleton />}> */}
+      <Suspense fallback={<GamesSkeleton />}>
       <GamesClient initialGames={games} />
-      {/* </Suspense> */}
+      </Suspense>
     </div>
   );
 }
