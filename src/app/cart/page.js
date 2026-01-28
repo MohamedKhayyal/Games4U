@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import CartClient from "@/components/cart/Cart";
+import CartSkeleton from "@/components/skeletons/CartSkeleton";
 
 export const metadata = {
   title: "Shopping Cart | Games4U",
@@ -9,7 +10,7 @@ export const metadata = {
 
 export default function CartPage() {
   return (
-    <Suspense fallback={<p className="text-center py-20">Loading cart...</p>}>
+    <Suspense fallback={<CartSkeleton />}>
       <CartClient />
     </Suspense>
   );

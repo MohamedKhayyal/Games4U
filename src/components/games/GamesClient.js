@@ -1,39 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { useCart } from "@/Providers/CartProvider";
 import { getImageUrl } from "@/lib/imageHelper";
+import Price from "@/components/ui/Price";
 
-export default function GamesClient() {
+export default function GamesClient({ initialGames = [] }) {
   const { refetchCart } = useCart();
-
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(null);
-
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        const res = await fetch("/api/games");
-        const data = await res.json();
-        setGames(data?.data?.games || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGames();
-  }, []);
 
   const addToCart = async (gameId, variant) => {
     try {
       setAdding(`${gameId}-${variant}`);
-
-      const res = await fetch("/api/cart/items", {
+      await fetch("/api/cart/items", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -43,28 +24,15 @@ export default function GamesClient() {
           variant,
         }),
       });
-
-      if (!res.ok) throw new Error("Please login first");
-
-      await refetchCart();
-    } catch (err) {
-      alert(err.message);
+      refetchCart();
     } finally {
       setAdding(null);
     }
   };
 
-  if (loading) {
-    return (
-      <p className="text-center mt-10 text-gray-400 text-sm">
-        Loading games...
-      </p>
-    );
-  }
-
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-      {games.map((game) => {
+      {initialGames.map((game) => {
         const primary = game.variants?.primary;
         const secondary = game.variants?.secondary;
 
@@ -73,8 +41,9 @@ export default function GamesClient() {
             key={game._id}
             className="bg-slate-900 rounded-lg p-2 sm:p-3 border border-slate-800 flex flex-col"
           >
+            {/* IMAGE */}
             <Link href={`/shop/games/${game.slug}`}>
-              <div className="relative w-full aspect-square mb-2 rounded-md overflow-hidden">
+              <div className="relative aspect-square mb-2 rounded-md overflow-hidden">
                 <Image
                   src={getImageUrl(game.photo)}
                   alt={game.name}
@@ -87,35 +56,53 @@ export default function GamesClient() {
               </div>
             </Link>
 
-            <h3 className="text-sm sm:text-base font-medium truncate mb-2">
+            <h3 className="text-sm sm:text-base font-medium truncate mb-1">
               {game.name}
             </h3>
 
-            <div className="mt-auto space-y-1">
-              {primary?.enabled && (
+            {game.isOnOffer && (
+              <span className="text-xs text-green-400 bg-green-500/20 px-2 py-0.5 rounded-full w-fit mb-2">
+                {game.discount}% OFF
+              </span>
+            )}
+
+            {primary?.enabled && (
+              <div className="space-y-1 mb-2">
+                <Price
+                  price={primary.price}
+                  finalPrice={primary.finalPrice}
+                  isOnOffer={game.isOnOffer}
+                />
                 <button
                   onClick={() => addToCart(game._id, "primary")}
                   disabled={adding === `${game._id}-primary`}
-                  className="w-full text-xs sm:text-sm py-1.5 rounded bg-sky-500 hover:bg-sky-400 text-black font-medium disabled:opacity-60"
+                  className="w-full text-xs py-1.5 rounded bg-sky-500 hover:bg-sky-400 text-black font-medium disabled:opacity-60"
                 >
                   {adding === `${game._id}-primary`
                     ? "Adding..."
-                    : `Primary – ${primary.finalPrice} EGP`}
+                    : "Add Primary"}
                 </button>
-              )}
+              </div>
+            )}
 
-              {secondary?.enabled && (
+            {secondary?.enabled && (
+              <div className="space-y-1">
+                <Price
+                  price={secondary.price}
+                  finalPrice={secondary.finalPrice}
+                  isOnOffer={game.isOnOffer}
+                />
                 <button
                   onClick={() => addToCart(game._id, "secondary")}
                   disabled={adding === `${game._id}-secondary`}
-                  className="w-full text-xs sm:text-sm py-1.5 rounded border border-sky-400 hover:bg-sky-400 hover:text-black disabled:opacity-60"
+                  className="w-full text-xs py-1.5 rounded border border-sky-400 hover:bg-sky-400 hover:text-black font-medium disabled:opacity-60"
                 >
                   {adding === `${game._id}-secondary`
                     ? "Adding..."
-                    : `Secondary – ${secondary.finalPrice} EGP`}
+                    : "Add Secondary"}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         );
       })}

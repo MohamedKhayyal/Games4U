@@ -1,24 +1,31 @@
 import GamesClient from "@/components/games/GamesClient";
+import GamesSkeleton from "@/components/skeletons/GamesSkeleton";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Games Store | Games4U",
-  description:
-    "Browse and buy the best PlayStation and console games at the best prices on Games4U.",
-  openGraph: {
-    title: "Games Store | Games4U",
-    description:
-      "Browse and buy the best PlayStation and console games at the best prices on Games4U.",
-  },
+  description: "Browse the best games at the best prices.",
 };
 
-export default function GamesPage() {
-  return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 text-white">
-      <h1 className="text-xl sm:text-3xl font-bold mb-4 sm:mb-8">
-        Games Store
-      </h1>
+async function GamesData() {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/games`,
+    { cache: "no-store" }
+  );
+  const data = await res.json();
+  return data?.data?.games || [];
+}
 
-      <GamesClient />
+export default async function GamesPage() {
+  const games = await GamesData();
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8 text-white">
+      <h1 className="text-3xl font-bold mb-8">Games Store</h1>
+
+      <Suspense fallback={<GamesSkeleton />}>
+        <GamesClient initialGames={games} />
+      </Suspense>
     </div>
   );
 }

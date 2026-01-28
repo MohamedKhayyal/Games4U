@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/Providers/CartProvider";
 import { getImageUrl } from "@/lib/imageHelper";
+import Price from "@/components/ui/Price";
+import BestSellerSkeleton from "@/components/skeletons/BestSellerSkeleton";
 
 export default function BestSellers() {
   const [games, setGames] = useState([]);
@@ -33,9 +35,7 @@ export default function BestSellers() {
       const res = await fetch("/api/cart/items", {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           itemId: gameId,
           itemType: "game",
@@ -43,9 +43,7 @@ export default function BestSellers() {
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Please login first");
-      }
+      if (!res.ok) throw new Error("Please login first");
 
       await refetchCart();
     } catch (err) {
@@ -55,12 +53,14 @@ export default function BestSellers() {
     }
   };
 
-  if (!games.length) return null;
+  if (!games.length) {
+    return <BestSellerSkeleton />;
+  }
 
   return (
     <section className="relative mt-5 max-w-7xl mx-auto px-2 py-10">
       <div className="flex items-center justify-between mb-6 px-2">
-        <h2 className="text-2xl font-semibold">🔥 Best Sellers</h2>
+        <h2 className="text-2xl font-semibold">Best Sellers</h2>
 
         <div className="hidden sm:flex gap-2">
           <button
@@ -107,6 +107,7 @@ export default function BestSellers() {
                 transition
               "
             >
+              {/* IMAGE */}
               <Link href={`/shop/games/${game.slug}`}>
                 <div className="relative h-44 sm:h-48">
                   <Image
@@ -124,10 +125,18 @@ export default function BestSellers() {
               <div className="p-4 space-y-3">
                 <p className="font-medium line-clamp-2">{game.name}</p>
 
+                {game.isOnOffer && (
+                  <span className="inline-block text-xs text-green-400 bg-green-500/20 px-2 py-0.5 rounded-full">
+                    {game.discount}% OFF
+                  </span>
+                )}
+
                 {primary?.enabled && (
                   <VariantRow
                     label="Primary"
-                    price={primary.finalPrice}
+                    price={primary.price}
+                    finalPrice={primary.finalPrice}
+                    isOnOffer={game.isOnOffer}
                     loading={loadingId === `${game._id}-primary`}
                     onAdd={() => addToCart(game._id, "primary")}
                   />
@@ -136,7 +145,9 @@ export default function BestSellers() {
                 {secondary?.enabled && (
                   <VariantRow
                     label="Secondary"
-                    price={secondary.finalPrice}
+                    price={secondary.price}
+                    finalPrice={secondary.finalPrice}
+                    isOnOffer={game.isOnOffer}
                     loading={loadingId === `${game._id}-secondary`}
                     onAdd={() => addToCart(game._id, "secondary")}
                   />
@@ -150,13 +161,13 @@ export default function BestSellers() {
   );
 }
 
-function VariantRow({ label, price, onAdd, loading }) {
+function VariantRow({ label, price, finalPrice, isOnOffer, onAdd, loading }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-2">
       <span className="text-sm text-slate-400">{label}</span>
 
       <div className="flex items-center gap-2">
-        <span className="text-sky-400 font-semibold">{price} EGP</span>
+        <Price price={price} finalPrice={finalPrice} isOnOffer={isOnOffer} />
 
         <button
           onClick={onAdd}
