@@ -21,11 +21,11 @@ export default function AdminDashboard() {
 
     fetch("/api/games/best-sellers?limit=5")
       .then((r) => r.json())
-      .then((d) => setBestGames(d.data.games));
+      .then((d) => setBestGames(d.data.games || []));
 
     fetch("/api/devices/best-sellers?limit=5")
       .then((r) => r.json())
-      .then((d) => setBestDevices(d.data.devices));
+      .then((d) => setBestDevices(d.data.devices || []));
   }, []);
 
   if (!stats) return <p className="text-slate-400">Loading dashboard...</p>;
@@ -34,7 +34,6 @@ export default function AdminDashboard() {
     <>
       <h2 className="text-3xl font-bold mb-8">Dashboard</h2>
 
-      {/* STATS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
         <Stat title="Users" value={stats.users} />
         <Stat title="Games" value={stats.games} />
@@ -47,8 +46,8 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <BestSellers title="🔥 Best Selling Games" items={bestGames} />
-        <BestSellers title="🔥 Best Selling Devices" items={bestDevices} />
+        <BestSellers title="Best Selling Games" items={bestGames} />
+        <BestSellers title="Best Selling Devices" items={bestDevices} />
       </div>
     </>
   );

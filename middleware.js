@@ -13,9 +13,7 @@ export function middleware(req) {
 
   const token = req.cookies.get("jwt")?.value;
 
-  const protectedRoutes = ["/cart", "/orders", "/profile", "/admin"];
-
-  if (!token && protectedRoutes.some((r) => pathname.startsWith(r))) {
+  if (!token && pathname.startsWith("/admin")) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
@@ -23,5 +21,5 @@ export function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|api|favicon.ico).*)"],
+  matcher: ["/admin/:path*"],
 };
