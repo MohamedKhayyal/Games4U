@@ -51,7 +51,11 @@ export default function LoginPage() {
       await refetchUser();
       await refetchCart();
 
-      router.replace("/");
+      if (data.user.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     } catch (err) {
       setError(err.message);
     } finally {

@@ -10,7 +10,7 @@ export const metadata = {
 
 async function getDevices() {
   const res = await fetch(
-    `${process.env.API_URL}/api/devices`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/devices`,
     { cache: "no-store" }
   );
   const data = await res.json();

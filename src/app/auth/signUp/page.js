@@ -62,7 +62,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex bg-[#0b1020] text-white">
-      {/* Left */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 xl:px-24">
         <h1 className="text-3xl font-bold mb-8">Create Account</h1>
 
@@ -123,7 +122,6 @@ export default function SignupPage() {
         </p>
       </div>
 
-      {/* Right */}
       <div className="hidden lg:block w-1/2 relative">
         <img
           src="/images/auth.jpg"

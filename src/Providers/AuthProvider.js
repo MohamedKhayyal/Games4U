@@ -2,8 +2,6 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
-
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -11,13 +9,16 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
+    setLoading(true);
+
     try {
       const res = await fetch("/api/users/me", {
         credentials: "include",
         cache: "no-store",
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error("Not authenticated");
+
       const data = await res.json();
       setUser(data.data.user);
     } catch {
@@ -27,6 +28,14 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const logout = async () => {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    setUser(null);
+  };
 
   useEffect(() => {
     fetchUser();
@@ -38,13 +47,7 @@ export function AuthProvider({ children }) {
         user,
         loading,
         refetchUser: fetchUser,
-        logout: async () => {
-          await fetch(`${API}/api/auth/logout`, {
-            method: "POST",
-            credentials: "include",
-          });
-          setUser(null);
-        },
+        logout,
       }}
     >
       {children}
@@ -52,4 +55,8 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
+};
