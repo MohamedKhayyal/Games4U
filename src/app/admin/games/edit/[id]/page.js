@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import Textarea from "@/components/ui/Textarea";
 
 export default function EditGamePage() {
   const { id } = useParams();
@@ -13,17 +16,18 @@ export default function EditGamePage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    platform: "",
+    platform: "ps5",
     stock: 0,
     primaryPrice: "",
     secondaryPrice: "",
+    isFeatured: false,
   });
+
+  /* ================= FETCH GAME ================= */
   useEffect(() => {
     if (!id) return;
 
-    fetch(`/api/games/id/${id}`, {
-      credentials: "include",
-    })
+    fetch(`/api/games/id/${id}`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) throw new Error("Game not found");
         return res.json();
@@ -35,10 +39,11 @@ export default function EditGamePage() {
         setForm({
           name: g.name || "",
           description: g.description || "",
-          platform: g.platform || "",
+          platform: g.platform || "ps5",
           stock: g.stock ?? 0,
           primaryPrice: g.variants?.primary?.price ?? "",
           secondaryPrice: g.variants?.secondary?.price ?? "",
+          isFeatured: g.isFeatured ?? false,
         });
       })
       .catch((err) => {
@@ -48,6 +53,7 @@ export default function EditGamePage() {
       .finally(() => setLoading(false));
   }, [id, router]);
 
+  /* ================= UPDATE GAME ================= */
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -62,6 +68,7 @@ export default function EditGamePage() {
           description: form.description,
           platform: form.platform,
           stock: Number(form.stock),
+          isFeatured: form.isFeatured,
           variants: {
             primary: {
               enabled: true,
@@ -69,7 +76,9 @@ export default function EditGamePage() {
             },
             secondary: {
               enabled: form.secondaryPrice !== "",
-              price: form.secondaryPrice ? Number(form.secondaryPrice) : 0,
+              price: form.secondaryPrice
+                ? Number(form.secondaryPrice)
+                : 0,
             },
           },
         }),
@@ -85,10 +94,9 @@ export default function EditGamePage() {
     }
   };
 
-  if (loading) {
-    return <p className="text-slate-400">Loading game...</p>;
-  }
+  if (loading) return <p className="text-slate-400">Loading game...</p>;
 
+  /* ================= UI ================= */
   return (
     <div className="max-w-2xl">
       <h1 className="text-3xl font-bold mb-6">Edit Game</h1>
@@ -97,55 +105,61 @@ export default function EditGamePage() {
         onSubmit={submit}
         className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4"
       >
-        <input
-          className="w-full bg-slate-800 p-2 rounded"
+        <Input
+          label="Game Name"
           value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder="Game name"
+          onChange={(v) => setForm({ ...form, name: v })}
         />
 
-        <textarea
-          className="w-full bg-slate-800 p-2 rounded"
-          rows={4}
+        <Textarea
+          label="Description"
           value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          placeholder="Description"
+          onChange={(v) => setForm({ ...form, description: v })}
         />
 
-        <select
-          className="w-full bg-slate-800 p-2 rounded"
+        <Select
+          label="Platform"
           value={form.platform}
-          onChange={(e) => setForm({ ...form, platform: e.target.value })}
-        >
-          <option value="">Select platform</option>
-          <option value="ps5">PS5</option>
-          <option value="ps4">PS4</option>
-          <option value="xbox">Xbox</option>
-        </select>
+          onChange={(v) => setForm({ ...form, platform: v })}
+          options={[
+            { value: "ps5", label: "PS5" },
+            { value: "ps4", label: "PS4" },
+            { value: "xbox", label: "Xbox" },
+          ]}
+        />
 
-        <input
+        <Input
+          label="Stock"
           type="number"
-          className="w-full bg-slate-800 p-2 rounded"
           value={form.stock}
-          onChange={(e) => setForm({ ...form, stock: e.target.value })}
-          placeholder="Stock"
+          onChange={(v) => setForm({ ...form, stock: v })}
         />
 
-        <input
+        <Input
+          label="Primary Price (EGP)"
           type="number"
-          className="w-full bg-slate-800 p-2 rounded"
           value={form.primaryPrice}
-          onChange={(e) => setForm({ ...form, primaryPrice: e.target.value })}
-          placeholder="Primary price"
+          onChange={(v) => setForm({ ...form, primaryPrice: v })}
         />
 
-        <input
+        <Input
+          label="Secondary Price (optional)"
           type="number"
-          className="w-full bg-slate-800 p-2 rounded"
           value={form.secondaryPrice}
-          onChange={(e) => setForm({ ...form, secondaryPrice: e.target.value })}
-          placeholder="Secondary price (optional)"
+          onChange={(v) => setForm({ ...form, secondaryPrice: v })}
         />
+
+        {/* ⭐ FEATURED */}
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.isFeatured}
+            onChange={(e) =>
+              setForm({ ...form, isFeatured: e.target.checked })
+            }
+          />
+          Featured game
+        </label>
 
         <button
           disabled={saving}
