@@ -29,13 +29,28 @@ export default function AdminGamesPage() {
     }
   };
 
-  if (loading) {
-    return <p className="text-slate-400">Loading games...</p>;
-  }
+  const toggleFeatured = async (id) => {
+    try {
+      const res = await fetch(`/api/games/${id}/feature`, {
+        method: "PATCH",
+        credentials: "include",
+      });
 
-  if (!games.length) {
-    return <p className="text-slate-400">No games found.</p>;
-  }
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+
+      setGames((prev) =>
+        prev.map((g) =>
+          g._id === id ? { ...g, isFeatured: data.data.isFeatured } : g,
+        ),
+      );
+    } catch {
+      alert("Failed to update featured status");
+    }
+  };
+
+  if (loading) return <p className="text-slate-400">Loading games...</p>;
 
   return (
     <>
@@ -55,10 +70,10 @@ export default function AdminGamesPage() {
             <tr>
               <th className="p-3 text-left">Name</th>
               <th>Platform</th>
-              <th>primary Price</th>
-              <th>secondary Price</th>
+              <th>Primary</th>
+              <th>Secondary</th>
               <th>Stock</th>
-              <th>Offer</th>
+              <th>Featured</th>
               <th className="text-right p-3">Actions</th>
             </tr>
           </thead>
@@ -72,15 +87,28 @@ export default function AdminGamesPage() {
                 <td className="p-3">{game.name}</td>
                 <td className="capitalize">{game.platform}</td>
                 <td>{game.variants?.primary?.finalPrice} EGP</td>
-                <td>{game.variants?.secondary?.finalPrice} EGP</td>
-                <td>{game.stock}</td>
                 <td>
-                  {game.isOnOffer ? (
-                    <span className="text-green-400">ON</span>
-                  ) : (
-                    <span className="text-slate-400">OFF</span>
-                  )}
+                  {game.variants?.secondary?.enabled
+                    ? `${game.variants.secondary.finalPrice} EGP`
+                    : "-"}
                 </td>
+                <td>{game.stock}</td>
+
+                {/* ⭐ FEATURED */}
+                <td>
+                  <button
+                    onClick={() => toggleFeatured(game._id)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition
+                      ${
+                        game.isFeatured
+                          ? "bg-yellow-400 text-black"
+                          : "bg-slate-700 text-slate-300 hover:bg-yellow-500 hover:text-black"
+                      }`}
+                  >
+                    {game.isFeatured ? "★ Featured" : "☆ Feature"}
+                  </button>
+                </td>
+
                 <td className="p-3 text-right space-x-3">
                   <Link
                     href={`/admin/games/edit/${game._id}`}

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/Providers/AuthProvider";
 import { getImageUrl } from "@/lib/imageHelper";
 import Image from "next/image";
+import { User } from "lucide-react";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function ProfilePage() {
         name: user.name || "",
         email: user.email || "",
       });
-      setPreview(user.photo || "/images/user.png");
+      setPreview(user.photo || "");
     }
   }, [user]);
 
@@ -90,15 +91,20 @@ export default function ProfilePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex flex-col items-center gap-4">
-          {preview && (
+          {getImageUrl(preview) ? (
             <Image
               src={getImageUrl(preview)}
               width={112}
               height={112}
               alt="Profile Photo"
-              className="w-28 h-28 rounded-full object-cover border-2 border-sky-500 shadow-lg"
+              className="w-28 h-28 rounded-full object-cover border-2 border-sky-500"
             />
+          ) : (
+            <div className="w-28 h-28 rounded-full border-2 border-sky-500 flex items-center justify-center bg-slate-800">
+              <User className="w-10 h-10 text-sky-400" />
+            </div>
           )}
+
           <label className="cursor-pointer text-sm text-sky-400 hover:underline">
             Change photo
             <input
@@ -110,7 +116,6 @@ export default function ProfilePage() {
           </label>
         </div>
 
-        {/* Name */}
         <div>
           <label className="block mb-1 text-sm text-slate-300">Full name</label>
           <input

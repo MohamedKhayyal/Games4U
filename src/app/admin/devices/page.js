@@ -25,6 +25,27 @@ export default function AdminDevicesPage() {
     setDevices((prev) => prev.filter((d) => d._id !== id));
   };
 
+  const toggleFeatured = async (id) => {
+    try {
+      const res = await fetch(`/api/devices/${id}/feature`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+
+      setDevices((prev) =>
+        prev.map((d) =>
+          d._id === id ? { ...d, isFeatured: data.data.isFeatured } : d,
+        ),
+      );
+    } catch {
+      alert("Failed to update featured status");
+    }
+  };
+
   if (loading) return <p className="text-slate-400">Loading devices...</p>;
 
   return (
@@ -44,9 +65,10 @@ export default function AdminDevicesPage() {
           <thead className="bg-slate-800">
             <tr>
               <th className="p-3 text-left">Name</th>
-              <th>Category</th>
               <th>Price</th>
               <th>Stock</th>
+              <th>Featured</th>
+              <th>Offer</th>
               <th className="text-right p-3">Actions</th>
             </tr>
           </thead>
@@ -58,9 +80,32 @@ export default function AdminDevicesPage() {
                 className="border-t border-slate-800 hover:bg-slate-800/40"
               >
                 <td className="p-3">{d.name}</td>
-                <td className="capitalize">{d.category}</td>
                 <td>{d.finalPrice} EGP</td>
                 <td>{d.stock}</td>
+
+                {/* ⭐ FEATURED */}
+                <td>
+                  <button
+                    onClick={() => toggleFeatured(d._id)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition
+                      ${
+                        d.isFeatured
+                          ? "bg-yellow-400 text-black"
+                          : "bg-slate-700 text-slate-300 hover:bg-yellow-500 hover:text-black"
+                      }`}
+                  >
+                    {d.isFeatured ? "★ Featured" : "☆ Feature"}
+                  </button>
+                </td>
+
+                <td>
+                  {d.isOnOffer ? (
+                    <span className="text-green-400">ON</span>
+                  ) : (
+                    <span className="text-slate-400">OFF</span>
+                  )}
+                </td>
+
                 <td className="p-3 text-right space-x-3">
                   <Link
                     href={`/admin/devices/edit/${d._id}`}

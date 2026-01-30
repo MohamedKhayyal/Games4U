@@ -1,4 +1,3 @@
-// app/admin/layout.js
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminGuard from "./AdminGuard";
 

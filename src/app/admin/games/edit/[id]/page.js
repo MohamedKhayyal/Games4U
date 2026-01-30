@@ -20,10 +20,8 @@ export default function EditGamePage() {
     stock: 0,
     primaryPrice: "",
     secondaryPrice: "",
-    isFeatured: false,
   });
 
-  /* ================= FETCH GAME ================= */
   useEffect(() => {
     if (!id) return;
 
@@ -43,7 +41,6 @@ export default function EditGamePage() {
           stock: g.stock ?? 0,
           primaryPrice: g.variants?.primary?.price ?? "",
           secondaryPrice: g.variants?.secondary?.price ?? "",
-          isFeatured: g.isFeatured ?? false,
         });
       })
       .catch((err) => {
@@ -53,7 +50,6 @@ export default function EditGamePage() {
       .finally(() => setLoading(false));
   }, [id, router]);
 
-  /* ================= UPDATE GAME ================= */
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -68,7 +64,6 @@ export default function EditGamePage() {
           description: form.description,
           platform: form.platform,
           stock: Number(form.stock),
-          isFeatured: form.isFeatured,
           variants: {
             primary: {
               enabled: true,
@@ -76,9 +71,7 @@ export default function EditGamePage() {
             },
             secondary: {
               enabled: form.secondaryPrice !== "",
-              price: form.secondaryPrice
-                ? Number(form.secondaryPrice)
-                : 0,
+              price: form.secondaryPrice ? Number(form.secondaryPrice) : 0,
             },
           },
         }),
@@ -96,7 +89,6 @@ export default function EditGamePage() {
 
   if (loading) return <p className="text-slate-400">Loading game...</p>;
 
-  /* ================= UI ================= */
   return (
     <div className="max-w-2xl">
       <h1 className="text-3xl font-bold mb-6">Edit Game</h1>
@@ -148,18 +140,6 @@ export default function EditGamePage() {
           value={form.secondaryPrice}
           onChange={(v) => setForm({ ...form, secondaryPrice: v })}
         />
-
-        {/* ⭐ FEATURED */}
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={form.isFeatured}
-            onChange={(e) =>
-              setForm({ ...form, isFeatured: e.target.checked })
-            }
-          />
-          Featured game
-        </label>
 
         <button
           disabled={saving}

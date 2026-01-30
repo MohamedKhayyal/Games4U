@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { ShoppingCart, User } from "lucide-react";
+
 import { useAuth } from "@/Providers/AuthProvider";
 import { useCart } from "@/Providers/CartProvider";
-import { ShoppingCart, User } from "lucide-react";
 import { getImageUrl } from "@/lib/imageHelper";
-import Image from "next/image";
 
 export default function Navbar() {
   const { user, loading, refetchUser } = useAuth();
@@ -42,6 +43,8 @@ export default function Navbar() {
     await refetchUser();
     window.location.href = "/";
   };
+
+  const avatarUrl = user ? getImageUrl(user.photo) : null;
 
   return (
     <nav
@@ -100,13 +103,13 @@ export default function Navbar() {
             user && (
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setDropdown(!dropdown)}>
-                  {user.photo ? (
+                  {avatarUrl ? (
                     <Image
-                      src={getImageUrl(user.photo)}
+                      src={avatarUrl}
                       alt="User"
-                      width={112}
-                      height={112}
-                      className="w-10 h-10 rounded-full object-cover"
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-full object-cover border border-sky-400"
                     />
                   ) : (
                     <UserIcon />
@@ -142,7 +145,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Icons */}
         <div className="flex items-center gap-4 sm:hidden">
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-5 h-5" />
@@ -159,7 +161,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {open && (
         <div className="sm:hidden mt-4 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
           <div className="flex flex-col divide-y divide-slate-800">
@@ -227,8 +228,6 @@ export default function Navbar() {
   );
 }
 
-/* Helpers */
-
 function Badge({ count }) {
   if (!count) return null;
   return (
@@ -240,8 +239,8 @@ function Badge({ count }) {
 
 function UserIcon() {
   return (
-    <div className="w-10 h-10 rounded-full border border-sky-400 flex items-center justify-center">
-      <User className="w-5 h-5" />
+    <div className="w-10 h-10 rounded-full border border-sky-400 flex items-center justify-center bg-slate-800">
+      <User className="w-5 h-5 text-sky-400" />
     </div>
   );
 }

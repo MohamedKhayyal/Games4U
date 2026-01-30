@@ -20,7 +20,6 @@ export default function EditDevicePage() {
     price: "",
     discount: 0,
     stock: 0,
-    isFeatured: false,
   });
 
   useEffect(() => {
@@ -40,7 +39,6 @@ export default function EditDevicePage() {
           price: d.price,
           discount: d.discount,
           stock: d.stock,
-          isFeatured: d.isFeatured,
         });
       })
       .finally(() => setLoading(false));
@@ -62,7 +60,6 @@ export default function EditDevicePage() {
           price: Number(form.price),
           discount: Number(form.discount),
           stock: Number(form.stock),
-          isFeatured: form.isFeatured,
         }),
       });
 
@@ -125,15 +122,6 @@ export default function EditDevicePage() {
           value={form.stock}
           onChange={(v) => setForm({ ...form, stock: v })}
         />
-
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={form.isFeatured}
-            onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-          />
-          Featured device
-        </label>
 
         <button
           disabled={saving}
