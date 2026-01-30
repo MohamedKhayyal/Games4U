@@ -49,7 +49,7 @@ export default function EditDevicePage() {
     setSaving(true);
 
     try {
-      const res = await fetch(`/api/devices/${id}`, {
+      const res = await fetch(`/api/devices/id/${id}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
