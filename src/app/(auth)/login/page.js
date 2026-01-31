@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
-import { useCart } from "@/Providers/CartProvider";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading, refetchUser } = useAuth();
-  const { refetchCart } = useCart();
+  const { refetchUser } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -20,16 +18,13 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace("/");
-    }
-  }, [user, loading, router]);
-
-  if (loading || user) return null;
+  /* ---------------- Handlers ---------------- */
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -48,13 +43,13 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      await refetchUser();
-      await refetchCart();
+      // 🔥 مهم: refetchUser لازم يرجّع user
+      const user = await refetchUser();
 
-      if (data.user.role === "admin") {
-        router.push("/admin");
+      if (user?.role === "admin") {
+        router.replace("/admin/dashboard");
       } else {
-        router.push("/");
+        router.replace("/");
       }
     } catch (err) {
       setError(err.message);
@@ -63,8 +58,11 @@ export default function LoginPage() {
     }
   };
 
+  /* ---------------- UI ---------------- */
+
   return (
     <div className="min-h-screen flex bg-[#0b1020] text-white">
+      {/* Left */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 xl:px-24">
         <h1 className="text-3xl font-bold mb-8">Welcome Back</h1>
 
@@ -91,8 +89,8 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-lg"
             >
               {showPassword ? "🙈" : "👁️"}
             </button>
@@ -102,7 +100,7 @@ export default function LoginPage() {
 
           <button
             disabled={submitting}
-            className="border border-sky-400 hover:bg-sky-400 hover:text-black transition py-3 w-full rounded-md font-medium mb-6"
+            className="border border-sky-400 hover:bg-sky-400 hover:text-black transition py-3 w-full rounded-md font-medium mb-6 disabled:opacity-60"
           >
             {submitting ? "Logging in..." : "Log in"}
           </button>
@@ -110,12 +108,13 @@ export default function LoginPage() {
 
         <p className="text-sm text-gray-300">
           Don&apos;t have an account?{" "}
-          <Link href="/auth/signUp" className="font-medium hover:underline">
+          <Link href="/signUp" className="font-medium hover:underline">
             Sign up
           </Link>
         </p>
       </div>
 
+      {/* Right */}
       <div className="hidden lg:block w-1/2 relative">
         <img
           src="/images/auth.jpg"

@@ -4,12 +4,10 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
-import { useCart } from "@/Providers/CartProvider";
 
 export default function SignupPage() {
   const router = useRouter();
   const { user, loading, refetchUser } = useAuth();
-  const { refetchCart } = useCart();
 
   const [form, setForm] = useState({
     name: "",
@@ -30,7 +28,10 @@ export default function SignupPage() {
   if (loading || user) return null;
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -50,7 +51,6 @@ export default function SignupPage() {
       if (!res.ok) throw new Error(data.message || "Signup failed");
 
       await refetchUser();
-      await refetchCart();
 
       router.replace("/");
     } catch (err) {
@@ -97,7 +97,7 @@ export default function SignupPage() {
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((v) => !v)}
               className="absolute right-4 top-1/2 -translate-y-1/2"
             >
               {showPassword ? "🙈" : "👁️"}
@@ -116,7 +116,7 @@ export default function SignupPage() {
 
         <p className="text-sm text-gray-300">
           Already have an account?{" "}
-          <Link href="/auth/login" className="font-medium hover:underline">
+          <Link href="/login" className="font-medium hover:underline">
             Log in
           </Link>
         </p>

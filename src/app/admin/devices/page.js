@@ -83,7 +83,6 @@ export default function AdminDevicesPage() {
                 <td>{d.finalPrice} EGP</td>
                 <td>{d.stock}</td>
 
-                {/* ⭐ FEATURED */}
                 <td>
                   <button
                     onClick={() => toggleFeatured(d._id)}

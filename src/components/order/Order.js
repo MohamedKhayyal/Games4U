@@ -14,7 +14,7 @@ export default function OrdersClient() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace("/auth/login");
+      router.replace("/login");
     }
   }, [authLoading, user, router]);
 

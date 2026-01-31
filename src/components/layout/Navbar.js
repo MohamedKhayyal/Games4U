@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { ShoppingCart, User } from "lucide-react";
 
 import { useAuth } from "@/Providers/AuthProvider";
@@ -10,7 +11,15 @@ import { useCart } from "@/Providers/CartProvider";
 import { getImageUrl } from "@/lib/imageHelper";
 
 export default function Navbar() {
-  const { user, loading, refetchUser } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // ❌ اخفي Navbar من admin pages و auth pages
+  const isAdminPage = pathname.startsWith("/admin");
+  const isAuthPage = pathname === "/login" || pathname === "/signUp";
+  if (isAdminPage || isAuthPage) return null;
+
+  const { user, loading, logout } = useAuth();
   const { count } = useCart();
 
   const [open, setOpen] = useState(false);
@@ -18,6 +27,8 @@ export default function Navbar() {
   const [dropdown, setDropdown] = useState(false);
 
   const dropdownRef = useRef(null);
+
+  /* ---------------- Effects ---------------- */
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -35,16 +46,16 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const logout = async () => {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-    await refetchUser();
-    window.location.href = "/";
+  /* ---------------- Handlers ---------------- */
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/login");
   };
 
   const avatarUrl = user ? getImageUrl(user.photo) : null;
+
+  /* ---------------- Render ---------------- */
 
   return (
     <nav
@@ -59,6 +70,7 @@ export default function Navbar() {
       `}
     >
       <div className="flex items-center justify-between">
+        {/* Logo */}
         <Link href="/" className="flex items-center">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-900/80 flex items-center justify-center">
             <img
@@ -69,23 +81,29 @@ export default function Navbar() {
           </div>
         </Link>
 
+        {/* ================= Desktop ================= */}
         <div className="hidden sm:flex items-center gap-8">
           <Link href="/" className="hover:text-sky-400">
             Home
           </Link>
+
           <Link href="/shop/games" className="hover:text-sky-400">
             Games
           </Link>
+
           <Link href="/shop/devices" className="hover:text-sky-400">
             Devices
           </Link>
 
-          <div className="hidden lg:flex items-center gap-2 bg-slate-800/80 px-4 py-1.5 rounded-full">
-            <input
-              className="bg-transparent outline-none placeholder-slate-400 w-40"
-              placeholder="Search games"
-            />
-          </div>
+          {/* ✅ Admin Dashboard */}
+          {user?.role === "admin" && (
+            <Link
+              href="/admin/dashboard"
+              className="px-4 py-1.5 rounded-full bg-sky-500 text-black font-medium hover:bg-sky-400 transition"
+            >
+              Dashboard
+            </Link>
+          )}
 
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-5 h-5" />
@@ -94,7 +112,7 @@ export default function Navbar() {
 
           {!loading && !user ? (
             <Link
-              href="/auth/login"
+              href="/login"
               className="px-6 py-2 border border-sky-400 hover:bg-sky-400 hover:text-black transition rounded-full text-sm"
             >
               Login
@@ -102,7 +120,7 @@ export default function Navbar() {
           ) : (
             user && (
               <div className="relative" ref={dropdownRef}>
-                <button onClick={() => setDropdown(!dropdown)}>
+                <button onClick={() => setDropdown((v) => !v)}>
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
@@ -125,6 +143,7 @@ export default function Navbar() {
                     >
                       Profile
                     </Link>
+
                     <Link
                       href="/orders"
                       onClick={() => setDropdown(false)}
@@ -132,8 +151,19 @@ export default function Navbar() {
                     >
                       Orders
                     </Link>
+
+                    {user.role === "admin" && (
+                      <Link
+                        href="/admin/dashboard"
+                        onClick={() => setDropdown(false)}
+                        className="block px-4 py-3 hover:bg-slate-800 text-sky-400"
+                      >
+                        Dashboard
+                      </Link>
+                    )}
+
                     <button
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="w-full text-left px-4 py-3 hover:bg-red-500/20 text-red-400"
                     >
                       Logout
@@ -145,13 +175,14 @@ export default function Navbar() {
           )}
         </div>
 
+        {/* ================= Mobile ================= */}
         <div className="flex items-center gap-4 sm:hidden">
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-5 h-5" />
             <Badge count={count} />
           </Link>
 
-          <button onClick={() => setOpen(!open)} aria-label="Menu">
+          <button onClick={() => setOpen((v) => !v)} aria-label="Menu">
             <svg width="22" height="16" viewBox="0 0 21 15">
               <rect width="21" height="2" rx="1" fill="#e5e7eb" />
               <rect y="6" width="21" height="2" rx="1" fill="#e5e7eb" />
@@ -161,65 +192,58 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* ================= Mobile Menu ================= */}
       {open && (
         <div className="sm:hidden mt-4 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
           <div className="flex flex-col divide-y divide-slate-800">
-            <Link
-              href="/"
-              onClick={() => setOpen(false)}
-              className="px-5 py-4 hover:bg-slate-800"
-            >
+            <Link href="/" onClick={() => setOpen(false)} className="px-5 py-4">
               Home
             </Link>
+
             <Link
               href="/shop/games"
               onClick={() => setOpen(false)}
-              className="px-5 py-4 hover:bg-slate-800"
+              className="px-5 py-4"
             >
               Games
             </Link>
+
             <Link
               href="/shop/devices"
               onClick={() => setOpen(false)}
-              className="px-5 py-4 hover:bg-slate-800"
+              className="px-5 py-4"
             >
               Devices
             </Link>
 
+            {user?.role === "admin" && (
+              <Link
+                href="/admin/dashboard"
+                onClick={() => setOpen(false)}
+                className="px-5 py-4 text-sky-400"
+              >
+                Dashboard
+              </Link>
+            )}
+
             {!loading && !user ? (
               <Link
-                href="/auth/login"
+                href="/login"
                 onClick={() => setOpen(false)}
-                className="px-5 py-4 text-sky-400 hover:bg-slate-800"
+                className="px-5 py-4 text-sky-400"
               >
                 Login
               </Link>
             ) : (
-              <>
-                <Link
-                  href="/profile"
-                  onClick={() => setOpen(false)}
-                  className="px-5 py-4 hover:bg-slate-800"
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/orders"
-                  onClick={() => setOpen(false)}
-                  className="px-5 py-4 hover:bg-slate-800"
-                >
-                  Orders
-                </Link>
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    logout();
-                  }}
-                  className="text-left px-5 py-4 text-red-400 hover:bg-red-500/10"
-                >
-                  Logout
-                </button>
-              </>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  handleLogout();
+                }}
+                className="text-left px-5 py-4 text-red-400"
+              >
+                Logout
+              </button>
             )}
           </div>
         </div>
@@ -227,6 +251,8 @@ export default function Navbar() {
     </nav>
   );
 }
+
+/* ---------------- Helpers ---------------- */
 
 function Badge({ count }) {
   if (!count) return null;

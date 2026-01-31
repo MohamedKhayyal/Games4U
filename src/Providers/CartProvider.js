@@ -1,10 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./AuthProvider";
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
+  const { user, loading: authLoading } = useAuth();
+
   const [cart, setCart] = useState(null);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,7 @@ export function CartProvider({ children }) {
 
       setCart(cartData);
       setCount(cartData?.items?.length || 0);
-    } catch (err) {
+    } catch {
       setCart(null);
       setCount(0);
     } finally {
@@ -35,8 +38,17 @@ export function CartProvider({ children }) {
   };
 
   useEffect(() => {
+    if (authLoading) return;
+
+    if (!user) {
+      setCart(null);
+      setCount(0);
+      setLoading(false);
+      return;
+    }
+
     fetchCart();
-  }, []);
+  }, [user, authLoading]);
 
   return (
     <CartContext.Provider

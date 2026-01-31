@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import OrdersClient from "../../components/order/Order";
+import OrdersClient from "@/components/order/Order";
 
 export const metadata = {
   title: "My Orders | Games4U",

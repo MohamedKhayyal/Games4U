@@ -94,7 +94,6 @@ export default function AdminGamesPage() {
                 </td>
                 <td>{game.stock}</td>
 
-                {/* ⭐ FEATURED */}
                 <td>
                   <button
                     onClick={() => toggleFeatured(game._id)}
