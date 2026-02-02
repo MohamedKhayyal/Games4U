@@ -8,42 +8,40 @@ export default function AdminDevicesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/devices", { credentials: "include" })
+    fetch("/api/devices/admin", { credentials: "include" })
       .then((r) => r.json())
-      .then((d) => setDevices(d.data.devices || []))
+      .then((d) => setDevices(d?.data?.devices || []))
       .finally(() => setLoading(false));
   }, []);
 
-  const deleteDevice = async (id) => {
-    if (!confirm("Delete this device?")) return;
-
-    await fetch(`/api/devices/${id}`, {
-      method: "DELETE",
+  const toggleActive = async (id) => {
+    const res = await fetch(`/api/devices/${id}/toggle-active`, {
+      method: "PATCH",
       credentials: "include",
     });
 
-    setDevices((prev) => prev.filter((d) => d._id !== id));
+    if (!res.ok) return alert("Failed to toggle active");
+
+    setDevices((prev) =>
+      prev.map((d) => (d._id === id ? { ...d, isActive: !d.isActive } : d)),
+    );
   };
 
   const toggleFeatured = async (id) => {
-    try {
-      const res = await fetch(`/api/devices/${id}/feature`, {
-        method: "PATCH",
-        credentials: "include",
-      });
+    const res = await fetch(`/api/devices/${id}/feature`, {
+      method: "PATCH",
+      credentials: "include",
+    });
 
-      if (!res.ok) throw new Error();
+    if (!res.ok) return alert("Failed to toggle featured");
 
-      const data = await res.json();
+    const data = await res.json();
 
-      setDevices((prev) =>
-        prev.map((d) =>
-          d._id === id ? { ...d, isFeatured: data.data.isFeatured } : d,
-        ),
-      );
-    } catch {
-      alert("Failed to update featured status");
-    }
+    setDevices((prev) =>
+      prev.map((d) =>
+        d._id === id ? { ...d, isFeatured: data.data.isFeatured } : d,
+      ),
+    );
   };
 
   if (loading) return <p className="text-slate-400">Loading devices...</p>;
@@ -65,10 +63,12 @@ export default function AdminDevicesPage() {
           <thead className="bg-slate-800">
             <tr>
               <th className="p-3 text-left">Name</th>
+              <th>Discount</th>
               <th>Price</th>
+              <th>Condition</th>
               <th>Stock</th>
+              <th>Active</th>
               <th>Featured</th>
-              <th>Offer</th>
               <th className="text-right p-3">Actions</th>
             </tr>
           </thead>
@@ -79,10 +79,27 @@ export default function AdminDevicesPage() {
                 key={d._id}
                 className="border-t border-slate-800 hover:bg-slate-800/40"
               >
-                <td className="p-3">{d.name}</td>
+                <td className="p-3 font-medium">{d.name}</td>
+                <td>{d.discount ? `${d.discount}%` : "-"}</td>
                 <td>{d.finalPrice} EGP</td>
+                <td>{d.condition}</td>
                 <td>{d.stock}</td>
 
+                <td>
+                  <button
+                    onClick={() => toggleActive(d._id)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold
+                      ${
+                        d.isActive
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-red-500/20 text-red-400"
+                      }`}
+                  >
+                    {d.isActive ? "Active" : "Inactive"}
+                  </button>
+                </td>
+
+                {/* FEATURED */}
                 <td>
                   <button
                     onClick={() => toggleFeatured(d._id)}
@@ -97,14 +114,6 @@ export default function AdminDevicesPage() {
                   </button>
                 </td>
 
-                <td>
-                  {d.isOnOffer ? (
-                    <span className="text-green-400">ON</span>
-                  ) : (
-                    <span className="text-slate-400">OFF</span>
-                  )}
-                </td>
-
                 <td className="p-3 text-right space-x-3">
                   <Link
                     href={`/admin/devices/edit/${d._id}`}
@@ -112,12 +121,6 @@ export default function AdminDevicesPage() {
                   >
                     Edit
                   </Link>
-                  <button
-                    onClick={() => deleteDevice(d._id)}
-                    className="text-red-400"
-                  >
-                    Delete
-                  </button>
                 </td>
               </tr>
             ))}

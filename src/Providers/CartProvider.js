@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { addToCart, removeFromCart } from "@/lib/cartActions";
 
 const CartContext = createContext(null);
 
@@ -14,9 +15,22 @@ export function CartProvider({ children }) {
 
   const fetchCart = async () => {
     try {
-      const res = await fetch("/api/cart/me", {
+      let res = await fetch("/api/cart/me", {
         credentials: "include",
       });
+
+      if (res.status === 401) {
+        const refreshRes = await fetch("/api/auth/refresh-token", {
+          method: "POST",
+          credentials: "include",
+        });
+
+        if (!refreshRes.ok) throw new Error("Session expired");
+
+        res = await fetch("/api/cart/me", {
+          credentials: "include",
+        });
+      }
 
       if (!res.ok) {
         setCart(null);
@@ -57,6 +71,15 @@ export function CartProvider({ children }) {
         count,
         loading,
         refetchCart: fetchCart,
+
+        addItem: async ({ itemId, itemType, variant }) => {
+          await addToCart({ itemId, itemType, variant });
+          await fetchCart();
+        },
+        removeItem: async (itemId) => {
+          await removeFromCart(itemId);
+          await fetchCart();
+        },
       }}
     >
       {children}

@@ -7,22 +7,17 @@ import { getImageUrl } from "@/lib/imageHelper";
 import Price from "@/components/ui/Price";
 
 export default function DeviceDetailsClient({ device }) {
+  const { addItem } = useCart();
   const [adding, setAdding] = useState(false);
-  const { refetchCart } = useCart();
 
-  const addToCart = async () => {
+  const handleAddToCart = async () => {
     try {
       setAdding(true);
-      await fetch("/api/cart/items", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itemId: device._id,
-          itemType: "device",
-        }),
+
+      await addItem({
+        itemId: device._id,
+        itemType: "device",
       });
-      refetchCart();
     } finally {
       setAdding(false);
     }
@@ -30,7 +25,6 @@ export default function DeviceDetailsClient({ device }) {
 
   return (
     <div className="grid md:grid-cols-2 gap-12">
-      {/* IMAGE */}
       <div className="relative aspect-square rounded-2xl overflow-hidden border border-slate-800">
         <Image
           src={getImageUrl(device.photo)}
@@ -41,7 +35,6 @@ export default function DeviceDetailsClient({ device }) {
         />
       </div>
 
-      {/* INFO */}
       <div className="space-y-6">
         <h1 className="text-4xl font-bold">{device.name}</h1>
         <p className="text-slate-400 leading-relaxed">{device.description}</p>
@@ -57,11 +50,13 @@ export default function DeviceDetailsClient({ device }) {
             </span>
           )}
         </div>
+
         <Price
           price={device.price}
           finalPrice={device.finalPrice}
           isOnOffer={device.isOnOffer}
         />
+
         <span
           className={`text-sm ${
             device.stock > 0 ? "text-emerald-400" : "text-red-400"
@@ -71,7 +66,7 @@ export default function DeviceDetailsClient({ device }) {
         </span>
 
         <button
-          onClick={addToCart}
+          onClick={handleAddToCart}
           disabled={adding || device.stock <= 0}
           className={`w-full py-4 rounded-xl font-semibold transition
             ${

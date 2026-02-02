@@ -8,22 +8,17 @@ import { getImageUrl } from "@/lib/imageHelper";
 import Price from "@/components/ui/Price";
 
 export default function DevicesClient({ initialDevices = [] }) {
+  const { addItem } = useCart();
   const [adding, setAdding] = useState(null);
-  const { refetchCart } = useCart();
 
-  const addToCart = async (deviceId) => {
+  const handleAddToCart = async (deviceId) => {
     try {
       setAdding(deviceId);
-      await fetch("/api/cart/items", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itemId: deviceId,
-          itemType: "device",
-        }),
+
+      await addItem({
+        itemId: deviceId,
+        itemType: "device",
       });
-      refetchCart();
     } finally {
       setAdding(null);
     }
@@ -55,9 +50,11 @@ export default function DevicesClient({ initialDevices = [] }) {
 
           <div className="p-3 flex flex-col gap-2 flex-1">
             <p className="font-medium truncate">{device.name}</p>
+
             <p className="text-sm text-slate-400 capitalize">
               Condition: {device.condition}
             </p>
+
             <Price
               price={device.price}
               finalPrice={device.finalPrice}
@@ -65,7 +62,7 @@ export default function DevicesClient({ initialDevices = [] }) {
             />
 
             <button
-              onClick={() => addToCart(device._id)}
+              onClick={() => handleAddToCart(device._id)}
               disabled={adding === device._id || device.stock <= 0}
               className={`mt-auto py-2 rounded-md text-sm font-medium transition
                 ${

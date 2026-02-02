@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/Providers/CartProvider";
 import { getImageUrl } from "@/lib/imageHelper";
 import BestSellerSkeleton from "@/components/skeletons/BestSellerSkeleton";
@@ -11,9 +12,11 @@ export default function BestSellers() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
-  const sliderRef = useRef(null);
-  const { refetchCart } = useCart();
 
+  const sliderRef = useRef(null);
+  const { addItem } = useCart();
+
+  /* Fetch best sellers */
   useEffect(() => {
     setLoading(true);
 
@@ -40,6 +43,7 @@ export default function BestSellers() {
       .finally(() => setLoading(false));
   }, []);
 
+  /* Slider scroll */
   const scroll = (dir) => {
     sliderRef.current?.scrollBy({
       left: dir === "left" ? -320 : 320,
@@ -47,39 +51,25 @@ export default function BestSellers() {
     });
   };
 
-  const addToCart = async ({ id, itemType, variant }) => {
+  /* Add to cart via CartProvider */
+  const handleAddToCart = async ({ id, itemType, variant }) => {
     try {
       setLoadingId(`${id}-${variant || "single"}`);
 
-      const res = await fetch("/api/cart/items", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itemId: id,
-          itemType,
-          variant,
-        }),
+      await addItem({
+        itemId: id,
+        itemType,
+        variant,
       });
-
-      if (!res.ok) throw new Error("Please login first");
-
-      await refetchCart();
-    } catch (err) {
-      alert(err.message);
+    } catch {
+      alert("Please login first");
     } finally {
       setLoadingId(null);
     }
   };
 
   if (loading) return <BestSellerSkeleton />;
-  if (!items.length) {
-    return (
-      <div className="text-center py-16 text-slate-400">
-        No best sellers available.
-      </div>
-    );
-  }
+  if (!items.length) return null;
 
   return (
     <section className="relative max-w-7xl mx-auto px-4 py-12">
@@ -89,15 +79,15 @@ export default function BestSellers() {
         <div className="hidden sm:flex gap-2">
           <button
             onClick={() => scroll("left")}
-            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center"
           >
-            ←
+            <ChevronLeft />
           </button>
           <button
             onClick={() => scroll("right")}
-            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center"
           >
-            →
+            <ChevronRight />
           </button>
         </div>
       </div>
@@ -109,15 +99,7 @@ export default function BestSellers() {
         {items.map((item) => (
           <div
             key={item._id}
-            className="
-              min-w-[280px]
-              bg-slate-900
-              border border-slate-800
-              rounded-xl
-              overflow-hidden
-              hover:border-sky-400
-              transition
-            "
+            className="min-w-[280px] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-sky-400 transition"
           >
             <Link
               href={
@@ -144,16 +126,18 @@ export default function BestSellers() {
             </Link>
 
             <div className="p-4 space-y-3">
-              <p className="font-semibold line-clamp-2">{item.name}</p>
-              <p className="text-sm text-slate-400 capitalize">
-                {item.condition}
-              </p>
+              <div className="flex space-between items-baseline gap-5">
+                <h3 className="font-semibold text-lg">{item.name}</h3>
+                <p className="text-sm text-slate-400 capitalize">
+                  {item.condition}
+                </p>
+              </div>
               {item.itemType === "game" && (
                 <>
                   {item.variants?.primary?.enabled && (
                     <button
                       onClick={() =>
-                        addToCart({
+                        handleAddToCart({
                           id: item._id,
                           itemType: "game",
                           variant: "primary",
@@ -171,7 +155,7 @@ export default function BestSellers() {
                   {item.variants?.secondary?.enabled && (
                     <button
                       onClick={() =>
-                        addToCart({
+                        handleAddToCart({
                           id: item._id,
                           itemType: "game",
                           variant: "secondary",
@@ -193,7 +177,10 @@ export default function BestSellers() {
                   <p className="text-lg font-bold">{item.finalPrice} EGP</p>
                   <button
                     onClick={() =>
-                      addToCart({ id: item._id, itemType: "device" })
+                      handleAddToCart({
+                        id: item._id,
+                        itemType: "device",
+                      })
                     }
                     disabled={loadingId === `${item._id}-single`}
                     className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-semibold disabled:opacity-60"

@@ -7,23 +7,18 @@ import { getImageUrl } from "@/lib/imageHelper";
 import Price from "@/components/ui/Price";
 
 export default function GameDetailsClient({ game }) {
-  const { refetchCart } = useCart();
+  const { addItem } = useCart();
   const [adding, setAdding] = useState(null);
 
-  const addToCart = async (variant) => {
+  const handleAddToCart = async (variant) => {
     try {
       setAdding(variant);
-      await fetch("/api/cart/items", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itemId: game._id,
-          itemType: "game",
-          variant,
-        }),
+
+      await addItem({
+        itemId: game._id,
+        itemType: "game",
+        variant,
       });
-      refetchCart();
     } finally {
       setAdding(null);
     }
@@ -70,14 +65,15 @@ export default function GameDetailsClient({ game }) {
               isOnOffer={game.isOnOffer}
             />
             <button
-              onClick={() => addToCart("primary")}
-              disabled={adding === "primary"}
-              className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-semibold"
+              onClick={() => handleAddToCart("primary")}
+              disabled={adding === "primary" || game.stock <= 0}
+              className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-semibold disabled:opacity-60"
             >
               {adding === "primary" ? "Adding..." : "Add Primary"}
             </button>
           </div>
         )}
+
         {secondary?.enabled && (
           <div className="space-y-2">
             <Price
@@ -86,9 +82,9 @@ export default function GameDetailsClient({ game }) {
               isOnOffer={game.isOnOffer}
             />
             <button
-              onClick={() => addToCart("secondary")}
-              disabled={adding === "secondary"}
-              className="w-full py-3 rounded-xl border border-sky-400 hover:bg-sky-400 hover:text-black font-semibold"
+              onClick={() => handleAddToCart("secondary")}
+              disabled={adding === "secondary" || game.stock <= 0}
+              className="w-full py-3 rounded-xl border border-sky-400 hover:bg-sky-400 hover:text-black font-semibold disabled:opacity-60"
             >
               {adding === "secondary" ? "Adding..." : "Add Secondary"}
             </button>

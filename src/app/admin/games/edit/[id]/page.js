@@ -20,6 +20,7 @@ export default function EditGamePage() {
     stock: 0,
     primaryPrice: "",
     secondaryPrice: "",
+    discount: 0,
   });
 
   useEffect(() => {
@@ -40,7 +41,10 @@ export default function EditGamePage() {
           platform: g.platform || "ps5",
           stock: g.stock ?? 0,
           primaryPrice: g.variants?.primary?.price ?? "",
-          secondaryPrice: g.variants?.secondary?.price ?? "",
+          secondaryPrice: g.variants?.secondary?.enabled
+            ? g.variants.secondary.price
+            : "",
+          discount: g.discount ?? 0,
         });
       })
       .catch((err) => {
@@ -64,6 +68,7 @@ export default function EditGamePage() {
           description: form.description,
           platform: form.platform,
           stock: Number(form.stock),
+          discount: Number(form.discount),
           variants: {
             primary: {
               enabled: true,
@@ -71,7 +76,10 @@ export default function EditGamePage() {
             },
             secondary: {
               enabled: form.secondaryPrice !== "",
-              price: form.secondaryPrice ? Number(form.secondaryPrice) : 0,
+              price:
+                form.secondaryPrice !== ""
+                  ? Number(form.secondaryPrice)
+                  : 0,
             },
           },
         }),
@@ -141,9 +149,16 @@ export default function EditGamePage() {
           onChange={(v) => setForm({ ...form, secondaryPrice: v })}
         />
 
+        <Input
+          label="Discount (%)"
+          type="number"
+          value={form.discount}
+          onChange={(v) => setForm({ ...form, discount: v })}
+        />
+
         <button
           disabled={saving}
-          className="w-full bg-sky-500 py-3 rounded-xl text-black font-semibold"
+          className="w-full bg-sky-500 py-3 rounded-xl text-black font-semibold disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>

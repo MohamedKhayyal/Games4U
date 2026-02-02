@@ -11,8 +11,10 @@ import BestSellerSkeleton from "../skeletons/BestSellerSkeleton";
 export default function FeaturedGamesSlider() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingId, setLoadingId] = useState(null);
+
   const sliderRef = useRef(null);
-  const { refetchCart } = useCart();
+  const { addItem } = useCart();
 
   useEffect(() => {
     setLoading(true);
@@ -33,31 +35,22 @@ export default function FeaturedGamesSlider() {
     });
   };
 
-  const addToCart = async (gameId, variant) => {
-    await fetch("/api/cart/items", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+  const handleAddToCart = async (gameId, variant) => {
+    try {
+      setLoadingId(`${gameId}-${variant}`);
+
+      await addItem({
         itemId: gameId,
         itemType: "game",
         variant,
-      }),
-    });
-
-    refetchCart();
+      });
+    } finally {
+      setLoadingId(null);
+    }
   };
 
-
   if (loading) return <BestSellerSkeleton />;
-
-  if (!games.length) {
-    return (
-      <div className="text-center py-16 text-slate-400">
-        No featured games available.
-      </div>
-    );
-  }
+  if (!games.length) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-14">
@@ -67,13 +60,13 @@ export default function FeaturedGamesSlider() {
         <div className="flex gap-3">
           <button
             onClick={() => scroll("left")}
-            className="w-11 h-11 rounded-full bg-slate-800 hover:bg-sky-500 hover:text-black transition flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center"
           >
             <ChevronLeft />
           </button>
           <button
             onClick={() => scroll("right")}
-            className="w-11 h-11 rounded-full bg-slate-800 hover:bg-sky-500 hover:text-black transition flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center"
           >
             <ChevronRight />
           </button>
@@ -111,19 +104,25 @@ export default function FeaturedGamesSlider() {
 
               {game.variants?.primary?.enabled && (
                 <button
-                  onClick={() => addToCart(game._id, "primary")}
-                  className="mt-3 w-full bg-sky-500 hover:bg-sky-400 text-black py-2 rounded-lg font-medium"
+                  onClick={() => handleAddToCart(game._id, "primary")}
+                  disabled={loadingId === `${game._id}-primary`}
+                  className="mt-3 w-full bg-sky-500 hover:bg-sky-400 text-black py-2 rounded-lg font-medium disabled:opacity-60"
                 >
-                  Add Primary – {game.variants.primary.finalPrice} EGP
+                  {loadingId === `${game._id}-primary`
+                    ? "Adding..."
+                    : `Add Primary – ${game.variants.primary.finalPrice} EGP`}
                 </button>
               )}
 
               {game.variants?.secondary?.enabled && (
                 <button
-                  onClick={() => addToCart(game._id, "secondary")}
-                  className="mt-2 w-full border border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-black py-2 rounded-lg font-medium transition"
+                  onClick={() => handleAddToCart(game._id, "secondary")}
+                  disabled={loadingId === `${game._id}-secondary`}
+                  className="mt-2 w-full border border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-black py-2 rounded-lg font-medium transition disabled:opacity-60"
                 >
-                  Add Secondary – {game.variants.secondary.finalPrice} EGP
+                  {loadingId === `${game._id}-secondary`
+                    ? "Adding..."
+                    : `Add Secondary – ${game.variants.secondary.finalPrice} EGP`}
                 </button>
               )}
             </div>

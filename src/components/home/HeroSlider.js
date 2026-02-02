@@ -3,31 +3,33 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-const slides = [
-  {
-    id: 1,
-    title: "THE LAST OF US\nPART II",
-    description:
-      "Five years after the events of The Last of Us, Ellie embarks on another journey through a post-apocalyptic America on a mission of vengeance against a mysterious militia.",
-    image: "/images/lastOfUs.jpg",
-  },
-  {
-    id: 2,
-    title: "GOD OF WAR\nRAGNARÖK",
-    description:
-      "Kratos and Atreus journey through the Nine Realms in search of answers as Asgardian forces prepare for war.",
-    image: "/images/godOfWar.jpeg",
-  },
-];
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getImageUrl } from "@/lib/imageHelper";
+import HeroSliderSkeleton from "@/components/skeletons/HeroSliderSkeleton";
 
 export default function HeroSlider() {
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
   const intervalRef = useRef(null);
 
+  useEffect(() => {
+    setLoading(true);
+
+    fetch("/api/banners")
+      .then((res) => res.json())
+      .then((data) => {
+        setBanners(data?.data?.banners || []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   const startAutoSlide = () => {
+    if (intervalRef.current || banners.length <= 1) return;
+
     intervalRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
+      setCurrent((prev) => (prev + 1) % banners.length);
     }, 5000);
   };
 
@@ -39,23 +41,27 @@ export default function HeroSlider() {
   };
 
   useEffect(() => {
+    if (!banners.length) return;
     startAutoSlide();
     return () => stopAutoSlide();
-  }, []);
+  }, [banners]);
 
   const next = () => {
     stopAutoSlide();
-    setCurrent((prev) => (prev + 1) % slides.length);
+    setCurrent((prev) => (prev + 1) % banners.length);
     startAutoSlide();
   };
 
   const prev = () => {
     stopAutoSlide();
-    setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+    setCurrent((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
     startAutoSlide();
   };
 
-  const slide = slides[current];
+  if (loading) return <HeroSliderSkeleton />;
+  if (!banners.length) return null;
+
+  const banner = banners[current];
 
   return (
     <section
@@ -64,8 +70,8 @@ export default function HeroSlider() {
       onMouseLeave={startAutoSlide}
     >
       <Image
-        src={slide.image}
-        alt={slide.title}
+        src={getImageUrl(banner.image)}
+        alt={banner.title}
         fill
         priority
         className="transition-opacity duration-700 object-contain sm:object-cover"
@@ -75,43 +81,53 @@ export default function HeroSlider() {
 
       <div className="relative z-10 h-full flex items-center px-6 md:px-16 lg:px-24">
         <div
-          key={current}
+          key={banner._id}
           className="max-w-xl text-white animate-fade-slide-left"
         >
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight whitespace-pre-line">
-            {slide.title}
+            {banner.title}
           </h1>
 
-          <p className="mt-4 sm:mt-6 text-gray-300 text-sm md:text-base leading-relaxed">
-            {slide.description}
-          </p>
+          {banner.description && (
+            <p className="mt-4 sm:mt-6 text-gray-300 text-sm md:text-base leading-relaxed">
+              {banner.description}
+            </p>
+          )}
+
+          {banner.discountText && (
+            <span className="inline-block mt-4 text-sm bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full">
+              {banner.discountText} % OFF
+            </span>
+          )}
 
           <div className="mt-6 sm:mt-8">
             <Link
               href="/shop"
               className="inline-block bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-200 transition"
             >
-              Buy Now
+              Shop Now
             </Link>
           </div>
         </div>
       </div>
 
-      <button
-        onClick={prev}
-        className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
-        aria-label="Previous slide"
-      >
-        ‹
-      </button>
+      {banners.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
+          >
+            <ChevronLeft />
+          </button>
 
-      <button
-        onClick={next}
-        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
-        aria-label="Next slide"
-      >
-        ›
-      </button>
+          <button
+            onClick={next}
+            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-black/60 p-3 rounded-full text-white text-2xl"
+          >
+            <ChevronRight />
+          </button>
+        </>
+      )}
     </section>
   );
 }

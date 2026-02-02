@@ -8,23 +8,18 @@ import { getImageUrl } from "@/lib/imageHelper";
 import Price from "@/components/ui/Price";
 
 export default function GamesClient({ initialGames = [] }) {
-  const { refetchCart } = useCart();
+  const { addItem } = useCart();
   const [adding, setAdding] = useState(null);
 
   const addToCart = async (gameId, variant) => {
     try {
       setAdding(`${gameId}-${variant}`);
-      await fetch("/api/cart/items", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itemId: gameId,
-          itemType: "game",
-          variant,
-        }),
+
+      await addItem({
+        itemId: gameId,
+        itemType: "game",
+        variant,
       });
-      refetchCart();
     } finally {
       setAdding(null);
     }
@@ -49,12 +44,6 @@ export default function GamesClient({ initialGames = [] }) {
                   fill
                   className="object-cover"
                 />
-
-                {game.isOnOffer && (
-                  <span className="absolute top-2 left-2 bg-red-500 text-xs px-2 py-1 rounded">
-                    -{game.discount}%
-                  </span>
-                )}
               </div>
             </Link>
 
@@ -70,8 +59,8 @@ export default function GamesClient({ initialGames = [] }) {
                   isOnOffer={game.isOnOffer}
                 />
                 <button
+                  disabled={adding === `${game._id}-primary` || game.stock <= 0}
                   onClick={() => addToCart(game._id, "primary")}
-                  disabled={adding === `${game._id}-primary`}
                   className="w-full text-xs py-1.5 rounded bg-sky-500 hover:bg-sky-400 text-black font-medium disabled:opacity-60"
                 >
                   {adding === `${game._id}-primary`

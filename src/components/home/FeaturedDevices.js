@@ -11,8 +11,10 @@ import BestSellerSkeleton from "../skeletons/BestSellerSkeleton";
 export default function FeaturedDevicesSlider() {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingId, setLoadingId] = useState(null);
+
   const sliderRef = useRef(null);
-  const { refetchCart } = useCart();
+  const { addItem } = useCart();
 
   useEffect(() => {
     setLoading(true);
@@ -26,6 +28,7 @@ export default function FeaturedDevicesSlider() {
       .finally(() => setLoading(false));
   }, []);
 
+  /* Slider scroll */
   const scroll = (dir) => {
     sliderRef.current?.scrollBy({
       left: dir === "left" ? -340 : 340,
@@ -33,51 +36,46 @@ export default function FeaturedDevicesSlider() {
     });
   };
 
-  const addToCart = async (deviceId) => {
-    await fetch("/api/cart/items", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+  /* Add to cart via CartProvider */
+  const handleAddToCart = async (deviceId) => {
+    try {
+      setLoadingId(deviceId);
+
+      await addItem({
         itemId: deviceId,
         itemType: "device",
-      }),
-    });
-
-    refetchCart();
+      });
+    } finally {
+      setLoadingId(null);
+    }
   };
 
   if (loading) return <BestSellerSkeleton />;
-
-  if (!devices.length) {
-    return (
-      <div className="text-center py-16 text-slate-400">
-        No featured devices available.
-      </div>
-    );
-  }
+  if (!devices.length) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-14">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold">Featured Devices</h2>
 
         <div className="flex gap-3">
           <button
             onClick={() => scroll("left")}
-            className="w-11 h-11 rounded-full bg-slate-800 hover:bg-sky-500 hover:text-black transition flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center"
           >
             <ChevronLeft />
           </button>
           <button
             onClick={() => scroll("right")}
-            className="w-11 h-11 rounded-full bg-slate-800 hover:bg-sky-500 hover:text-black transition flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center"
           >
             <ChevronRight />
           </button>
         </div>
       </div>
 
+      {/* Slider */}
       <div className="overflow-hidden">
         <div
           ref={sliderRef}
@@ -116,10 +114,11 @@ export default function FeaturedDevicesSlider() {
               </p>
 
               <button
-                onClick={() => addToCart(device._id)}
-                className="mt-4 w-full bg-sky-500 hover:bg-sky-400 text-black py-2 rounded-lg font-medium transition"
+                onClick={() => handleAddToCart(device._id)}
+                disabled={loadingId === device._id}
+                className="mt-4 w-full bg-sky-500 hover:bg-sky-400 text-black py-2 rounded-lg font-medium transition disabled:opacity-60"
               >
-                Add to Cart
+                {loadingId === device._id ? "Adding..." : "Add to Cart"}
               </button>
             </div>
           ))}

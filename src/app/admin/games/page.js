@@ -8,46 +8,40 @@ export default function AdminGamesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/games", { credentials: "include" })
+    fetch("/api/games/admin", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => setGames(d?.data?.games || []))
       .finally(() => setLoading(false));
   }, []);
 
-  const deleteGame = async (id) => {
-    if (!confirm("Are you sure you want to delete this game?")) return;
-
-    const res = await fetch(`/api/games/${id}`, {
-      method: "DELETE",
+  const toggleActive = async (id) => {
+    const res = await fetch(`/api/games/${id}/toggle-active`, {
+      method: "PATCH",
       credentials: "include",
     });
 
-    if (res.ok) {
-      setGames((prev) => prev.filter((g) => g._id !== id));
-    } else {
-      alert("Failed to delete game");
-    }
+    if (!res.ok) return alert("Failed to toggle active");
+
+    setGames((prev) =>
+      prev.map((g) => (g._id === id ? { ...g, isActive: !g.isActive } : g)),
+    );
   };
 
   const toggleFeatured = async (id) => {
-    try {
-      const res = await fetch(`/api/games/${id}/feature`, {
-        method: "PATCH",
-        credentials: "include",
-      });
+    const res = await fetch(`/api/games/${id}/feature`, {
+      method: "PATCH",
+      credentials: "include",
+    });
 
-      if (!res.ok) throw new Error();
+    if (!res.ok) return alert("Failed to toggle featured");
 
-      const data = await res.json();
+    const data = await res.json();
 
-      setGames((prev) =>
-        prev.map((g) =>
-          g._id === id ? { ...g, isFeatured: data.data.isFeatured } : g,
-        ),
-      );
-    } catch {
-      alert("Failed to update featured status");
-    }
+    setGames((prev) =>
+      prev.map((g) =>
+        g._id === id ? { ...g, isFeatured: data.data.isFeatured } : g,
+      ),
+    );
   };
 
   if (loading) return <p className="text-slate-400">Loading games...</p>;
@@ -70,9 +64,11 @@ export default function AdminGamesPage() {
             <tr>
               <th className="p-3 text-left">Name</th>
               <th>Platform</th>
+              <th>Discount</th>
               <th>Primary</th>
               <th>Secondary</th>
               <th>Stock</th>
+              <th>Active</th>
               <th>Featured</th>
               <th className="text-right p-3">Actions</th>
             </tr>
@@ -84,8 +80,9 @@ export default function AdminGamesPage() {
                 key={game._id}
                 className="border-t border-slate-800 hover:bg-slate-800/40"
               >
-                <td className="p-3">{game.name}</td>
+                <td className="p-3 font-medium">{game.name}</td>
                 <td className="capitalize">{game.platform}</td>
+                <td>{game.discount ? `${game.discount}%` : "-"}</td>
                 <td>{game.variants?.primary?.finalPrice} EGP</td>
                 <td>
                   {game.variants?.secondary?.enabled
@@ -93,6 +90,20 @@ export default function AdminGamesPage() {
                     : "-"}
                 </td>
                 <td>{game.stock}</td>
+
+                <td>
+                  <button
+                    onClick={() => toggleActive(game._id)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold
+                      ${
+                        game.isActive
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-red-500/20 text-red-400"
+                      }`}
+                  >
+                    {game.isActive ? "Active" : "Inactive"}
+                  </button>
+                </td>
 
                 <td>
                   <button
@@ -115,12 +126,6 @@ export default function AdminGamesPage() {
                   >
                     Edit
                   </Link>
-                  <button
-                    onClick={() => deleteGame(game._id)}
-                    className="text-red-400"
-                  >
-                    Delete
-                  </button>
                 </td>
               </tr>
             ))}

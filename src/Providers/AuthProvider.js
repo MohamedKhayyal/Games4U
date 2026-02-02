@@ -8,26 +8,45 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
- const fetchUser = async () => {
-  try {
-    const res = await fetch("/api/users/me", {
-      credentials: "include",
-      cache: "no-store",
-    });
+  let refreshing = false;
 
-    if (!res.ok) throw new Error("Not authenticated");
+  const fetchUser = async () => {
+    try {
+      let res = await fetch("/api/users/me", {
+        credentials: "include",
+        cache: "no-store",
+      });
 
-    const data = await res.json();
-    setUser(data.data.user);
-    return data.data.user;
-  } catch {
-    setUser(null);
-    return null;
-  } finally {
-    setLoading(false);
-  }
-};
+      if (res.status === 401 && !refreshing) {
+        refreshing = true;
 
+        const refreshRes = await fetch("/api/auth/refresh-token", {
+          method: "POST",
+          credentials: "include",
+        });
+
+        refreshing = false;
+
+        if (!refreshRes.ok) throw new Error("Session expired");
+
+        res = await fetch("/api/users/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+      }
+
+      if (!res.ok) throw new Error("Not authenticated");
+
+      const data = await res.json();
+      setUser(data.data.user);
+      return data.data.user;
+    } catch {
+      setUser(null);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const logout = async () => {
     try {
