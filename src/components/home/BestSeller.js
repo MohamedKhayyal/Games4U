@@ -5,20 +5,39 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/Providers/CartProvider";
 import { getImageUrl } from "@/lib/imageHelper";
-import Price from "@/components/ui/Price";
 import BestSellerSkeleton from "@/components/skeletons/BestSellerSkeleton";
 
 export default function BestSellers() {
-  const [games, setGames] = useState([]);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
   const sliderRef = useRef(null);
   const { refetchCart } = useCart();
 
   useEffect(() => {
-    fetch("/api/games/best-sellers?limit=10")
-      .then((res) => res.json())
-      .then((data) => setGames(data?.data?.games || []))
-      .catch(console.error);
+    setLoading(true);
+
+    Promise.all([
+      fetch("/api/games/best-sellers?limit=5").then((r) => r.json()),
+      fetch("/api/devices/best-sellers?limit=5").then((r) => r.json()),
+    ])
+      .then(([gamesRes, devicesRes]) => {
+        const games =
+          gamesRes?.data?.games?.map((g) => ({
+            ...g,
+            itemType: "game",
+          })) || [];
+
+        const devices =
+          devicesRes?.data?.devices?.map((d) => ({
+            ...d,
+            itemType: "device",
+          })) || [];
+
+        setItems([...games, ...devices]);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const scroll = (dir) => {
@@ -28,17 +47,17 @@ export default function BestSellers() {
     });
   };
 
-  const addToCart = async (gameId, variant) => {
+  const addToCart = async ({ id, itemType, variant }) => {
     try {
-      setLoadingId(`${gameId}-${variant}`);
+      setLoadingId(`${id}-${variant || "single"}`);
 
       const res = await fetch("/api/cart/items", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          itemId: gameId,
-          itemType: "game",
+          itemId: id,
+          itemType,
           variant,
         }),
       });
@@ -53,25 +72,30 @@ export default function BestSellers() {
     }
   };
 
-  if (!games.length) {
-    return <BestSellerSkeleton />;
+  if (loading) return <BestSellerSkeleton />;
+  if (!items.length) {
+    return (
+      <div className="text-center py-16 text-slate-400">
+        No best sellers available.
+      </div>
+    );
   }
 
   return (
-    <section className="relative mt-5 max-w-7xl mx-auto px-2 py-10">
-      <div className="flex items-center justify-between mb-6 px-2">
-        <h2 className="text-2xl font-semibold">Best Sellers</h2>
+    <section className="relative max-w-7xl mx-auto px-4 py-12">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">Best Sellers</h2>
 
         <div className="hidden sm:flex gap-2">
           <button
             onClick={() => scroll("left")}
-            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700"
           >
             ←
           </button>
           <button
             onClick={() => scroll("right")}
-            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700"
+            className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700"
           >
             →
           </button>
@@ -80,111 +104,110 @@ export default function BestSellers() {
 
       <div
         ref={sliderRef}
-        className="
-          flex gap-4
-          overflow-x-auto
-          scroll-smooth
-          scrollbar-hide
-          px-2
-        "
+        className="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide"
       >
-        {games.map((game) => {
-          const primary = game.variants?.primary;
-          const secondary = game.variants?.secondary;
-
-          return (
-            <div
-              key={game._id}
-              className="
-                min-w-[260px]
-                sm:min-w-[280px]
-                md:min-w-[300px]
-                bg-slate-900
-                border border-slate-800
-                rounded-xl
-                overflow-hidden
-                hover:border-sky-400
-                transition
-              "
+        {items.map((item) => (
+          <div
+            key={item._id}
+            className="
+              min-w-[280px]
+              bg-slate-900
+              border border-slate-800
+              rounded-xl
+              overflow-hidden
+              hover:border-sky-400
+              transition
+            "
+          >
+            <Link
+              href={
+                item.itemType === "game"
+                  ? `/shop/games/${item.slug}`
+                  : `/shop/devices/${item.slug}`
+              }
             >
-              {/* IMAGE */}
-              <Link href={`/shop/games/${game.slug}`}>
-                <div className="relative h-44 sm:h-48">
-                  <Image
-                    src={getImageUrl(game.photo)}
-                    alt={game.name}
-                    fill
-                    sizes="(max-width: 640px) 70vw,
-                           (max-width: 1024px) 35vw,
-                           300px"
-                    className="object-cover"
-                  />
-                </div>
-              </Link>
+              <div className="relative h-48">
+                <Image
+                  src={getImageUrl(item.photo)}
+                  alt={item.name}
+                  fill
+                  sizes="300px"
+                  className="object-cover"
+                />
 
-              <div className="p-4 space-y-3">
-                <p className="font-medium line-clamp-2">{game.name}</p>
-
-                {game.isOnOffer && (
-                  <span className="inline-block text-xs text-green-400 bg-green-500/20 px-2 py-0.5 rounded-full">
-                    {game.discount}% OFF
+                {item.isOnOffer && (
+                  <span className="absolute top-2 left-2 bg-red-500 text-xs px-2 py-1 rounded">
+                    -{item.discount}%
                   </span>
                 )}
-
-                {primary?.enabled && (
-                  <VariantRow
-                    label="Primary"
-                    price={primary.price}
-                    finalPrice={primary.finalPrice}
-                    isOnOffer={game.isOnOffer}
-                    loading={loadingId === `${game._id}-primary`}
-                    onAdd={() => addToCart(game._id, "primary")}
-                  />
-                )}
-
-                {secondary?.enabled && (
-                  <VariantRow
-                    label="Secondary"
-                    price={secondary.price}
-                    finalPrice={secondary.finalPrice}
-                    isOnOffer={game.isOnOffer}
-                    loading={loadingId === `${game._id}-secondary`}
-                    onAdd={() => addToCart(game._id, "secondary")}
-                  />
-                )}
               </div>
+            </Link>
+
+            <div className="p-4 space-y-3">
+              <p className="font-semibold line-clamp-2">{item.name}</p>
+              <p className="text-sm text-slate-400 capitalize">
+                {item.condition}
+              </p>
+              {item.itemType === "game" && (
+                <>
+                  {item.variants?.primary?.enabled && (
+                    <button
+                      onClick={() =>
+                        addToCart({
+                          id: item._id,
+                          itemType: "game",
+                          variant: "primary",
+                        })
+                      }
+                      disabled={loadingId === `${item._id}-primary`}
+                      className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-semibold disabled:opacity-60"
+                    >
+                      {loadingId === `${item._id}-primary`
+                        ? "Adding..."
+                        : `Add Primary – ${item.variants.primary.finalPrice} EGP`}
+                    </button>
+                  )}
+
+                  {item.variants?.secondary?.enabled && (
+                    <button
+                      onClick={() =>
+                        addToCart({
+                          id: item._id,
+                          itemType: "game",
+                          variant: "secondary",
+                        })
+                      }
+                      disabled={loadingId === `${item._id}-secondary`}
+                      className="w-full py-3 rounded-xl border border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-black font-semibold disabled:opacity-60"
+                    >
+                      {loadingId === `${item._id}-secondary`
+                        ? "Adding..."
+                        : `Add Secondary – ${item.variants.secondary.finalPrice} EGP`}
+                    </button>
+                  )}
+                </>
+              )}
+
+              {item.itemType === "device" && (
+                <>
+                  <p className="text-lg font-bold">{item.finalPrice} EGP</p>
+                  <button
+                    onClick={() =>
+                      addToCart({ id: item._id, itemType: "device" })
+                    }
+                    disabled={loadingId === `${item._id}-single`}
+                    className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-semibold disabled:opacity-60"
+                  >
+                    {loadingId === `${item._id}-single`
+                      ? "Adding..."
+                      : "Add to Cart"}
+                  </button>
+                </>
+              )}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </section>
-  );
-}
-
-function VariantRow({ label, price, finalPrice, isOnOffer, onAdd, loading }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-sm text-slate-400">{label}</span>
-
-      <div className="flex items-center gap-2">
-        <Price price={price} finalPrice={finalPrice} isOnOffer={isOnOffer} />
-
-        <button
-          onClick={onAdd}
-          disabled={loading}
-          className="
-            px-3 py-1
-            text-xs
-            bg-sky-500
-            hover:bg-sky-400
-            rounded
-            text-black
-            disabled:opacity-60
-          "
-        >
-          {loading ? "..." : "Add"}
-        </button>
-      </div>
-    </div>
   );
 }

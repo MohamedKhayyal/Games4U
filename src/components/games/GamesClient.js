@@ -41,30 +41,26 @@ export default function GamesClient({ initialGames = [] }) {
             key={game._id}
             className="bg-slate-900 rounded-lg p-2 sm:p-3 border border-slate-800 flex flex-col"
           >
-            {/* IMAGE */}
             <Link href={`/shop/games/${game.slug}`}>
-              <div className="relative aspect-square mb-2 rounded-md overflow-hidden">
+              <div className="relative h-44 mb-3 rounded-lg overflow-hidden">
                 <Image
                   src={getImageUrl(game.photo)}
                   alt={game.name}
                   fill
-                  sizes="(max-width: 640px) 50vw,
-                         (max-width: 1024px) 25vw,
-                         20vw"
                   className="object-cover"
                 />
+
+                {game.isOnOffer && (
+                  <span className="absolute top-2 left-2 bg-red-500 text-xs px-2 py-1 rounded">
+                    -{game.discount}%
+                  </span>
+                )}
               </div>
             </Link>
 
             <h3 className="text-sm sm:text-base font-medium truncate mb-1">
               {game.name}
             </h3>
-
-            {game.isOnOffer && (
-              <span className="text-xs text-green-400 bg-green-500/20 px-2 py-0.5 rounded-full w-fit mb-2">
-                {game.discount}% OFF
-              </span>
-            )}
 
             {primary?.enabled && (
               <div className="space-y-1 mb-2">

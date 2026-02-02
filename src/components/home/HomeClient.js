@@ -7,6 +7,8 @@ import { useAuth } from "@/Providers/AuthProvider";
 
 import HeroSlider from "@/components/home/HeroSlider";
 import BestSellerSection from "./BestSeller";
+import FeaturedGames from "./FeaturedGames";
+import FeaturedDevices from "./FeaturedDevices";
 
 const FeaturedBanners = dynamic(
   () => import("@/components/home/FeaturedBanners"),
@@ -32,6 +34,8 @@ export default function HomeClient() {
       <HeroSlider />
       <FeaturedBanners />
       <BestSellerSection />
+      <FeaturedGames />
+      <FeaturedDevices />
     </div>
   );
 }

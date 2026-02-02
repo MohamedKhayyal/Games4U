@@ -14,7 +14,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  // ❌ اخفي Navbar من admin pages و auth pages
   const isAdminPage = pathname.startsWith("/admin");
   const isAuthPage = pathname === "/login" || pathname === "/signUp";
   if (isAdminPage || isAuthPage) return null;
@@ -27,8 +26,6 @@ export default function Navbar() {
   const [dropdown, setDropdown] = useState(false);
 
   const dropdownRef = useRef(null);
-
-  /* ---------------- Effects ---------------- */
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -46,16 +43,12 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* ---------------- Handlers ---------------- */
-
   const handleLogout = async () => {
     await logout();
-    router.replace("/login");
+    window.location.href = "/login";
   };
 
   const avatarUrl = user ? getImageUrl(user.photo) : null;
-
-  /* ---------------- Render ---------------- */
 
   return (
     <nav
@@ -70,7 +63,6 @@ export default function Navbar() {
       `}
     >
       <div className="flex items-center justify-between">
-        {/* Logo */}
         <Link href="/" className="flex items-center">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-900/80 flex items-center justify-center">
             <img
@@ -81,7 +73,6 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* ================= Desktop ================= */}
         <div className="hidden sm:flex items-center gap-8">
           <Link href="/" className="hover:text-sky-400">
             Home
@@ -95,7 +86,6 @@ export default function Navbar() {
             Devices
           </Link>
 
-          {/* ✅ Admin Dashboard */}
           {user?.role === "admin" && (
             <Link
               href="/admin/dashboard"
@@ -175,7 +165,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* ================= Mobile ================= */}
         <div className="flex items-center gap-4 sm:hidden">
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-5 h-5" />
@@ -192,7 +181,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ================= Mobile Menu ================= */}
       {open && (
         <div className="sm:hidden mt-4 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
           <div className="flex flex-col divide-y divide-slate-800">
@@ -251,8 +239,6 @@ export default function Navbar() {
     </nav>
   );
 }
-
-/* ---------------- Helpers ---------------- */
 
 function Badge({ count }) {
   if (!count) return null;

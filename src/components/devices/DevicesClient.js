@@ -37,33 +37,27 @@ export default function DevicesClient({ initialDevices = [] }) {
           className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col"
         >
           <Link href={`/shop/devices/${device.slug}`}>
-            <div className="relative aspect-square">
+            <div className="relative h-44 mb-3 rounded-lg overflow-hidden">
               <Image
                 src={getImageUrl(device.photo)}
                 alt={device.name}
                 fill
-                sizes="(max-width: 640px) 50vw,
-                       (max-width: 1024px) 25vw,
-                       20vw"
                 className="object-cover"
               />
+
+              {device.isOnOffer && (
+                <span className="absolute top-2 left-2 bg-red-500 text-xs px-2 py-1 rounded">
+                  -{device.discount}%
+                </span>
+              )}
             </div>
           </Link>
 
           <div className="p-3 flex flex-col gap-2 flex-1">
             <p className="font-medium truncate">{device.name}</p>
-
-            <div className="flex gap-2 text-xs">
-              <span className="bg-slate-800 px-2 py-0.5 rounded-full">
-                {device.condition.toUpperCase()}
-              </span>
-              {device.isOnOffer && (
-                <span className="inline-block text-xs text-green-400 bg-green-500/20 px-2 py-0.5 rounded-full">
-                  {device.discount}% OFF
-                </span>
-              )}
-            </div>
-
+            <p className="text-sm text-slate-400 capitalize">
+              Condition: {device.condition}
+            </p>
             <Price
               price={device.price}
               finalPrice={device.finalPrice}

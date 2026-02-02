@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* =========================
-   HERO SLIDER (LEFT TEXT)
-========================= */
 @keyframes fadeSlideLeft {
   from {
     opacity: 0;
@@ -18,9 +15,6 @@
   animation: fadeSlideLeft 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* =========================
-   BANNERS SCROLL REVEAL
-========================= */
 @keyframes slideUpFade {
   from {
     opacity: 0;
@@ -54,7 +48,6 @@
   animation-delay: 0.6s;
 }
 
-/* globals.css */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
